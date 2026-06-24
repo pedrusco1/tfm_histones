@@ -1,0 +1,158 @@
+---
+title: "Análisis descriptivo de datos composicionales"
+---
+
+```{r}
+#| label: setup-paths
+#| include: false
+
+# getwd() ≈ .../RProyecto_composicional/Informes/Proyecto
+root_dir  <- getwd()
+
+# Carpeta de imágenes dentro del book
+img_dir   <- file.path(root_dir, "Imagenes")
+
+# Carpeta de datos en la raíz del proyecto
+datos_dir <- file.path(root_dir, "..", "..", "DatosProcesados")
+
+```
+
+## Análisis exploratorio de datos
+
+A continuación se presentan los resultados del análisis descriptivo composicional de las 20 proteoformas del fragmento H3 (9–17) para comparar su distribución relativa entre los estados asíncrono y mitótico. Las abundancias se trataron como componentes de un símplex y se resumieron mediante el centro composicional y la matriz de variación [@daunis-i-estadella2006]. Para el análisis exploratorio, se utilizaron coordenadas CLR en la visualización descriptiva y coordenadas ILR en el análisis de componentes principales [@aitchison2005; @greenacre2021].
+
+
+```{r}
+#| label: cargar-resultados-descriptivos
+#| include: false
+
+library(here)
+library(knitr)
+library(kableExtra)
+library(gridExtra)
+library(ggplot2)
+library(ggrepel)
+library(ggtern)
+
+res_descri <- readRDS(
+  file.path(datos_dir, "31_resultados_descri_h3917.rds")
+)
+
+list2env(res_descri, envir = knitr::knit_global())
+```
+
+### Centralización y variación
+
+En primer lugar se calcularon los centros de Aitchison por condición y para el conjunto completo de muestras. Estos centros composicionales resumen la contribución relativa media de cada proteoforma al perfil del fragmento H3 (9–17).
+
+```{r}
+#| label: tbl-medias
+#| tbl-cap: "Centros composicionales de cada proteoforma para las condiciones asíncrona y mitótica y para el conjunto global."
+
+medias_cond %>%
+  knitr::kable(
+    digits = c(0, 4, 4, 4),
+    col.names = c("Proteoforma", "Asíncrona", "Mitótica", "Global"),
+    booktabs = TRUE
+  )%>%
+  kableExtra::kable_styling(
+    latex_options = c("hold_position"),
+    font_size = 9
+  )
+```
+
+La @tbl-medias muestra los centros composicionales por condición y para el conjunto global de muestras. Esta tabla permite identificar qué proteoformas dominan el perfil del fragmento y cuáles muestran variaciones descriptivas entre estados. La comparación de estos centros es puramente exploratoria; la inferencia formal sobre las diferencias entre condiciones se aborda posteriormente mediante los modelos bayesianos.
+
+Por su parte, la estructura de covariación se evaluó con la matriz de variación composicional, que resume la estabilidad de los log-cocientes entre pares de componentes. En ella, los valores bajos indican relaciones relativas estables entre proteoformas, mientras que los altos reflejan una mayor variabilidad entre muestras.
+
+
+```{r}
+#| label: fig-mapascondicion
+#| fig-cap: "Matrices de variación composicional por condición experimental. Izquierda: asíncrona; derecha: mitótica."
+#| fig-height: 8
+#| fig-width: 10
+#| fig-show: hold
+
+grid.arrange(mapa_var_asinc$gtable, mapa_var_mitot$gtable, ncol = 2)
+```
+
+La @fig-mapascondicion muestra la matriz de variación composicional para cada condición experimental, calculada a partir de las 20 proteoformas del fragmento H3 (9–17). Cada celda cuantifica la varianza del log-cociente entre dos componentes, de modo que la figura resume la estabilidad de las relaciones relativas dentro del sistema composicional. Al ser la diagonal cero por construcción, esta matriz no describe varianzas marginales individuales, sino la variabilidad de los pares de proteoformas.
+
+La comparación entre ambos estados celulares revela cambios estructurales claros. En la condición asíncrona se observa un bloque de relaciones estables concentrado en las proteoformas no fosforiladas, mientras que en la condición mitótica la estructura de variación se reorganiza y destaca la variabilidad asociada a las proteoformas con fosforilación en S10. Esta diferencia indica que la entrada en mitosis altera la estabilidad de los bloques de modificación y no solo las abundancias individuales.
+
+```{r}
+#| label: fig-clr-boxplot
+#| fig-cap: "Distribución de las coordenadas CLR por proteoforma. Los puntos corresponden a muestras individuales y están coloreados por condición experimental."
+#| fig-height: 7
+#| fig-width: 10
+
+box_plot_clr
+```
+
+
+La @fig-clr-boxplot muestra las coordenadas CLR de cada proteoforma respecto al promedio geométrico de la composición (línea cero). Los valores positivos indican sobrerrepresentación y los negativos, infrarrepresentación relativa. Debido al bajo número de réplicas por condición, este gráfico se utiliza como análisis exploratorio para identificar de forma directa las proteoformas con perfiles más diferenciados entre estados.
+
+Para facilitar una visualización sintética del desplazamiento global entre condiciones, las 20 proteoformas se agruparon en tres categorías según sus modificaciones en el residuo S10 y K14: `noS10` (sin fosforilación en S10), `S10_only` (con S10ph pero sin K14ac) y `S10_K14` (con ambas modificaciones, S10ph y K14ac).
+
+```{r}
+#| label: fig-ternario
+#| fig-cap: "Representación ternaria de las muestras tras agrupar las proteoformas según presencia de S10ph y K14ac."
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: "90%"
+#| fig-align: "center"
+
+g_ternario +
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    
+    # 1. Aumentamos un poco más el margen del lienzo por si acaso
+    plot.margin = margin(t = 20, r = 20, b = 20, l = 20, unit = "pt"),
+    
+    # 2. Ajustamos la posición y el tamaño de las etiquetas de las esquinas
+    # El argumento 'vjust' e 'hjust' actúan desplazando el texto ligeramente
+    tern.axis.title.T = element_text(vjust = -0.5, size = 7), # Vértice superior
+    tern.axis.title.L = element_text(hjust = 0.5, size = 7),  # Vértice inferior izquierdo
+    tern.axis.title.R = element_text(hjust = 0.5, size = 7)   # Vértice inferior derecho
+  )
+```
+
+La @fig-ternario muestra la distribución del fragmento H3 (9–17) tras agrupar las proteoformas en las tres categorías. Las muestras asíncronas se sitúan cerca del vértice noS10, lo que refleja el predominio de las formas no fosforiladas. En cambio, las muestras mitóticas se desplazan hacia la región enriquecida en S10ph, especialmente hacia el eje de S10_only, reflejando visualmente la transición principal entre condiciones.
+
+### Análisis de componentes principales composicional (PCA)-ILR
+
+Para explorar la estructura global de covariación respetando la geometría de los datos, se realizó un análisis de componentes principales sobre coordenadas log-ratio isométricas (ILR). La transformación ILR proyecta las composiciones del fragmento ($D=20$) en un espacio euclídeo de 19 dimensiones ($D-1$), donde se aplica un PCA ordinario.
+
+
+```{r}
+#| label: fig-pcailr
+#| fig-cap: "PCA composicional calculado sobre coordenadas ILR. Los puntos están coloreados por condición y etiquetados por día experimental."
+#| out-width: "100%"
+
+g_pca_ilr_ind + 
+  # 1. Le da aire al número más alto en el eje Y
+  scale_y_continuous(expand = expansion(mult = c(0.05, 0.15))) +
+  
+  # 2. Le da aire al título para que no lo mutile el PDF
+  theme(
+    plot.margin = margin(t = 25, r = 10, b = 10, l = 10, unit = "pt"),
+    plot.title = element_text(margin = margin(b = 10, unit = "pt"))
+  )
+```
+
+La @fig-pcailr muestra la proyección de las muestras sobre las dos primeras componentes principales del PCA en coordenadas ILR. La primera componente explica el `r round(pca_ilr_eig[1, "percentage of variance"], 1)`% de la variabilidad y la segunda el `r round(pca_ilr_eig[2, "percentage of variance"], 1)`%. El patrón principal separa claramente los estados asíncrono y mitótico, lo que confirma que la transición celular domina la estructura composicional global.
+
+Como el PCA se calcula en coordenadas ILR, las cargas corresponden a balances y no a proteoformas individuales. Para facilitar la interpretación, estas direcciones principales se retroproyectaron al espacio CLR utilizando la base matemática del modelo.
+
+```{r}
+#| label: fig-pcailrptm
+#| fig-cap: "Cargas de las proteoformas en PC1 y PC2 tras retroproyectar las direcciones del PCA-ILR al espacio CLR."
+#| out-width: "100%"
+
+g_pca_clr_loadings
+```
+
+La @fig-pcailrptm muestra las cargas de cada proteoforma en las dos primeras componentes principales tras la retroproyección al espacio CLR. Las proteoformas situadas en lados opuestos de un eje contribuyen de forma contrapuesta a esa componente. Esta representación permite interpretar los ejes principales según los bloques de modificación, destacando la oposición entre las formas no fosforiladas y las enriquecidas en S10ph.
+
+En resumen, el análisis descriptivo muestra un cambio claro en el perfil de proteoformas entre los estados asíncrono y mitótico. Los gráficos revelan que la entrada en mitosis desplaza el sistema desde formas no fosforiladas hacia perfiles ricos en S10ph. Además, las matrices de variación confirman que esta transición altera la estructura de relaciones relativas y no solo las abundancias aisladas. Por último, el PCA en coordenadas ILR condensa esta separación global y detecta, tras la retroproyección, qué proteoformas lideran la variabilidad del fragmento.
+

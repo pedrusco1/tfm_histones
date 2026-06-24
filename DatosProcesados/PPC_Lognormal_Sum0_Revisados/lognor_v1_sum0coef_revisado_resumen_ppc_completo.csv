@@ -1,0 +1,50 @@
+"modelo","bloque_ppc","estadistico","componente","p_ppc"
+"lognor_v1_sum0coef_revisado","global","centroide_aitchison","global",0.3665
+"lognor_v1_sum0coef_revisado","global","variacion_total_clr","global",0.1779375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","unmod",0.435
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1",0.4366875
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2",0.4138125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3",0.4220625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9ac",0.5669375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K14ac",0.474
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1K14ac",0.478875
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2K14ac",0.458
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3K14ac",0.4555625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acK14ac",0.5310625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","S10ph",0.5769375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1S10ph",0.5974375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2S10ph",0.543125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3S10ph",0.5436875
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acS10ph",0.647125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","S10phK14ac",0.592625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1S10phK14ac",0.598625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2S10phK14ac",0.5628125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3S10phK14ac",0.5698125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acS10phK14ac",0.6270625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","unmod",0.3184375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1",0.3250625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2",0.31475
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3",0.2549375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9ac",0.2885625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K14ac",0.37575
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1K14ac",0.3815625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2K14ac",0.2204375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3K14ac",0.209875
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acK14ac",0.4144375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","S10ph",0.4569375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10ph",0.2376875
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10ph",0.6125
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10ph",0.6009375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acS10ph",0.283
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","S10phK14ac",0.225375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10phK14ac",0.0939375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10phK14ac",0.4860625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10phK14ac",0.5134375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acS10phK14ac",0.6200625
+"lognor_v1_sum0coef_revisado","balances","media_balance","S10ph vs No-S10ph",0.6346875
+"lognor_v1_sum0coef_revisado","balances","media_balance","Mod vs Unmod",0.635
+"lognor_v1_sum0coef_revisado","balances","media_balance","Ac vs No-Ac",0.532375
+"lognor_v1_sum0coef_revisado","balances","varianza_balance","S10ph vs No-S10ph",0.1580625
+"lognor_v1_sum0coef_revisado","balances","varianza_balance","Mod vs Unmod",0.3184375
+"lognor_v1_sum0coef_revisado","balances","varianza_balance","Ac vs No-Ac",0.4428125
+"lognor_v1_sum0coef_revisado","varianza_clr","T_clr","global",0.1779375

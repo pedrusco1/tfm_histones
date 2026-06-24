@@ -1,0 +1,25 @@
+---
+title: "Conclusiones"
+---
+
+1.  Las abundancias de las 20 proteoformas del fragmento H3 9–17 constituyen datos composicionales ligados por la restricción de suma constante (*simplex*). Por tanto, no pueden interpretarse como variables independientes sin se den sesgos severos, siendo indispensable el uso de las transformaciones CLR e ILR para trasladar las composiciones a un espacio euclídeo a
+
+2.  El análisis exploratorio composicional confirma una separación clara entre el estado asíncrono y la mitosis, caracterizada por una reorganización global del paisaje de proteoformas más que por cambios aislados. Asimismo, los modelos lineales moderados sobre datos transformados (`limma` y `edgeR`) proporcionan una primera detección clásica y robusta de estos cambios diferenciales.
+
+3.  La transición a la mitosis está gobernada por el incremento masivo de proteoformas que contienen la fosforilación en S10 (S10ph) y la consiguiente disminución de los estados no fosforilados, lo que identifica a esta marca como el eje principal de la redistribución composicional del sistema.
+
+4.  En el análisis de H3 9–17, la elección de esta estructura —sea la regresión de Dirichlet clásica, la epistática o la logístico-normal— condiciona de forma crítica la estimación de la dispersión. Aunque todas las opciones coinciden al estimar la localización media, divergen sensiblemente al representar la variabilidad. El enfoque logístico-normal con precisión residual común es el único que satisface estrictamente los criterios de compatibilidad en las comprobaciones predictivas (PPC) de la variación global , mientras que las familias de Dirichlet tienden a sobreestimar de manera sistemática dicha dispersión.
+
+5.  El modelo Dirichlet epistático con concentración común y efecto aleatorio de día ofrece el mejor compromiso entre ajuste, capacidad predictiva fuera de muestra (según WAIC y PSIS-LOO) e interpretabilidad biológica, reproduciendo adecuadamente el centro composicional y los balances del sistema.
+
+6.  La inclusión del "efecto de día" como intercepto aleatorio mejora de forma consistente el rendimiento de todos los modelos. Esto confirma la necesidad de incluir bloques temporales en el modelo para corregir la variabilidad entre experimentos y estimar con precisión el efecto de la mitosis.
+
+7.  Es posible modelar y cuantificar formalmente las interacciones moleculares (*crosstalk*) de no-aditividad mediante campos epistáticos definidos sobre el grafo de Hamming de las proteoformas, utilizando un operador de tipo Laplaciano que penaliza las desviaciones respecto a los efectos principales.
+
+8.  La contribución relativa de la epistasia disminuye de forma drástica al pasar del estado asíncrono (donde representa un 7-8 % de la varianza energética) a la mitosis (donde cae a un \~3 %). Esto revela una simplificación del sistema hacia un régimen predominantemente aditivo durante la división celular, compatible con una respuesta molecular coordinada de "trazo grueso".
+
+9.   A pesar de la aditividad global en la mitosis, la señal epistática remanente se concentra de forma selectiva en un número reducido de proteoformas, mostrando sinergias locales concretas y persistentes ligadas a combinaciones específicas entre S10ph y determinados estados de K9 y K14.
+
+10.  Desde el punto de vista mecanístico, la mitosis no implica una pérdida ciega o generalizada de acetilaciones. Dentro del subespacio sin S10ph el balance de acetilación permanece próximo a cero, mientras que en el subespacio fosforilado en S10 disminuyen las formas multiacetiladas y aumentan las monoacetiladas, demostrando que la desacetilación está estrictamente condicionada por el contexto molecular de la fosforilación.
+
+11.  En la transición a la mitosis, la descetilación no ocurre como una pérdida ciega o generalizada de de este grupo funcional, sino como una reconfiguración coordinada y dependiente de contexto (*crosstalk*). Mientras que en el subespacio de proteoformas sin S10ph el balance de acetilación permanece próximo a cero, en el subespacio fosforilado disminuyen las formas hiperacetiladas (como K9acK14ac, cuyo descenso es coherente con la condensación de la cromatina) y aumentan las monoacetiladas. Sin embargo, combinaciones específicas como S10phK14ac y K9acS10ph se incrementan de forma notable, lo que demuestra que la fosforilación en S10 condiciona la desacetilación selectiva y preserva módulos funcionales concretos en el nuevo estado celular.

@@ -1,0 +1,479 @@
+---
+title: "Resultados del modelo de Dirichlet epistatico de referencia"
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+#| label: setup-paths
+#| include: false
+# getwd() ≈ .../RProyecto_composicional/Informes/Proyecto
+root_dir  <- getwd()
+
+# Carpeta de imágenes dentro del book
+img_dir   <- file.path(root_dir, "Imagenes")
+
+# Carpeta de datos en la raíz del proyecto
+datos_dir <- file.path(root_dir, "..", "..", "DatosProcesados")
+
+```
+
+## Introducción al Análisis de la Distribución Posterior
+
+Una vez seccionado el modelo de Dirichlet con campo epistático,
+parámetro de dispersión común ($\kappa$) y efecto aleatorio de día,
+pasamos a examinar sus estimaciones. En este apartado calculamos el
+tamaño del efecto biológico con las muestras de la distribución
+posterior para responder a las dos preguntas de la investigación:
+
+1.  **¿Cómo cambian las distribuciones de las abundancias relativas de
+    las proteoformas de la histona H3 al pasar las células del estado
+    asincrónico a la mitosis?**
+
+2.  **Según la bibliografía, durante la mitosis se produce una
+    desacetilación masiva de las histonas; el objetivo es verificar si
+    esta afirmación es cierta.**
+
+Para resolver estas cuestiones de forma cuantitativa, analizaremos
+primero los efectos individuales de cada proteoforma mediante los
+coeficientes de regresión del campo energético y sus respectivos
+log-cocientes de abundancia. Después, utilizaremos la transformación de
+coordenadas ILR para evaluar la reorganización de la masa composicional
+a través de cuatro balances secuenciales. Este examen nos permitirá
+verificar si los cambios observados en la acetilación se producen de
+manera uniforme o si dependen de otras modificaciones concurrentes.
+
+```{r}
+#| label: cargar-resultados-proporciones-epistasia
+#| include: false
+library(here)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+
+file_res <- here::here(datos_dir, "78_resultados_proporciones_epistasia.rds")
+if (!file.exists(file_res)) {
+  stop(
+    "No se encuentra el archivo de resultados precalculados: ", file_res, "\n",
+    "Ejecuta antes: source(here::here('ScriptsR', '78_precalcular_resultados_proporciones_epistasia.R'))"
+  )
+}
+
+res_epi <- readRDS(file_res)
+tabla_beta <- res_epi$beta_logratio
+tabla_Q <- res_epi$Q_cond
+Q_long <- res_epi$Q_long
+tabla_balances <- res_epi$balances
+balances_long <- res_epi$balances_long
+```
+
+## Análisis de Efectos Individuales de las Proteoformas
+
+Para evaluar la magnitud del efecto directamente sobre la escala de las
+proporciones medias estimadas ($Q_k$), calculamos el log-cociente de
+cambio (*Log-Fold Change* o $\text{logFC}$) para cada componente $k$:
+
+$$\text{logFC}_k = \log \left( \frac{Q_{k,\text{mitosis}}}{Q_{k,\text{asíncrona}}} \right)$$
+
+Este indicador mide el sentido y la magnitud del cambio de las
+abundancias relativas entre ambas condiciones celulares:
+
+- Un $\text{logFC}_k > 0$ confirma un aumento real en la proporción de
+  la proteoforma durante la mitosis (enriquecimiento).
+- Un $\text{logFC}_k < 0$ señala una disminución de su peso en la
+  composición (depleción).
+
+En la @tbl-logratio-Q-epistasia se presentan los resultados de esta
+evaluación. Junto a la mediana posterior de estos cocientes y sus
+intervalos de credibilidad del 95%, evaluamos el evidencia estadística
+de cada cambio mediante la **probabilidad de dirección**. Esta métrica
+representa la probabilidad de que el $\text{logFC}$ sea estrictamente
+mayor o menor que cero, según corresponda, a partir de la muestra de la
+distribución posterior ($P(\text{logFC} > 0 \mid \text{Datos})$ o
+$P(\text{logFC} < 0 \mid \text{Datos})$). Un valor próximo a $1$ indica
+que la dirección del efecto es inequívoca bajo el modelo.
+
+Esta comparación en el símplex permite contrastar directamente la
+hipótesis de la desacetilación masiva. Si la pérdida de grupos acetilo
+fuera general y uniforme, todas las proteoformas acetiladas deberían
+mostrar de manera unánime valores de $\text{logFC}$ negativos y
+robustos.
+
+```{r}
+#| label: tbl-logratio-Q-epistasia
+#| tbl-cap: "Efecto de la mitosis sobre las proporciones medias posteriores. Para cada proteoforma se muestra el log-cociente composicional $\\log(Q_{\\mathrm{mitosis}} / Q_{\\mathrm{asincronía}})$."
+
+tabla_logratio_fmt <- tabla_beta %>%
+  transmute(
+    Proteoforma = PTM,
+    `Media log(Qmit/Qasinc)` = sprintf("%.3f", log_ratio_Q_media),
+    `Mediana log(Qmit/Qasinc)` = sprintf("%.3f", log_ratio_Q_mediana),
+    `IC95 log(Qmit/Qasinc)` = sprintf("[%.3f, %.3f]", log_ratio_Q_q025, log_ratio_Q_q975),
+    Dirección = direccion_Q
+  )
+
+knitr::kable(
+  tabla_logratio_fmt,
+  booktabs = TRUE,
+  align = c("l", "r", "r", "r", "l")
+) %>%
+  kableExtra::kable_styling(full_width = FALSE, 
+                            font_size = 8,
+                            latex_options = "HOLD_position")
+```
+
+Al trasladar el análisis directamente al espacio de las proporciones
+estimadas, se cuantifica la magnitud real del efecto en el símplex.
+Todas las proteoformas que incorporan la fosforilación en la Serina 10
+experimentan un incremento masivo en su abundancia relativa durante la
+mitosis. Este hecho se constata en los valores de $\text{logFC}$
+marcadamente positivos, cuyos límites inferiores de los intervalos de
+credibilidad se sitúan muy por encima de cero. Destacan los incrementos
+de las variantes metiladas-fosforiladas como K9me1S10ph
+($\text{Mediana} = 4.372$) y de la forma híbrida acetilada-fosforilada
+S10phK14ac ($\text{Mediana} = 4.301$).
+
+En el extremo opuesto, el sustrato no modificado (unmod), las
+metilaciones puras y la mayoría de las variantes exclusivamente
+acetiladas muestran valores de $\text{logFC}$ negativos, lo que confirma
+su reducción en la composición mitótica. La caída más acusada dentro del
+grupo acetilado se localiza en la forma doblemente modificada K9acK14ac
+($\text{Mediana} = -1.512$, IC95% $[-2.541, -0.473]$).
+
+Si embargo, los datos contradicen las hipotesis de una desacetilación
+masiva y abundante. Si bien la mayoría de las formas acetiladas
+decrecen, el comportamiento no es homogéneo para todo el grupo:
+
+- La proteoforma monoacetilada K9ac y la forma triplemente modificada
+  K9acS10phK14ac presentan intervalos de credibilidad del 95% que cruzan
+  el cero ($[-1.180, 0.810]$ y $[-0.466, 2.742]$, respectivamente). Bajo
+  este examen individual, el sentido de su cambio permanece incierto.
+
+- Además, destaca el comportamiento de formas híbridas como K9acS10ph
+  ($\text{Mediana} = 2.087$) y, sobre todo, S10phK14ac
+  ($\text{Mediana} = 4.301$). Estas variantes, a pesar de estar
+  acetiladas, no disminuyen, sino que se enriquecen de forma muy
+  notable.
+
+```{r}
+#| label: fig-densidades-Q-proteoformas-clave
+#| fig-cap: "Densidades posteriores de la abundancia relativa en asincronía y mitosis para proteoformas representativas."
+#| fig-width: 7
+#| fig-height: 5
+#| out-width: "100%"
+
+ptm_focus <- c("K9ac", "K9me1S10ph", "S10phK14ac", "K9acK14ac")
+ptm_focus <- intersect(ptm_focus, unique(Q_long$PTM))
+
+Q_long %>%
+  filter(PTM %in% ptm_focus) %>%
+  mutate(
+    PTM = factor(PTM, levels = ptm_focus),
+    condicion = recode(condicion, asincronia = "Asincronía", mitosis = "Mitosis")
+  ) %>%
+  ggplot(aes(x = Q, fill = condicion, colour = condicion)) +
+  geom_density(alpha = 0.25, linewidth = 0.4) +
+  facet_wrap(~ PTM, scales = "free") +
+  labs(
+    x = "Abundancia relativa posterior",
+    y = "Densidad posterior",
+    fill = "Condición",
+    colour = "Condición"
+  ) +
+  theme_minimal()
+```
+
+La @fig-densidades-Q-proteoformas-clave ilustra la reprogramación
+selectiva del fragmento de la histona H3 mediante las densidades a
+posteriori de cuatro proteoformas clave: la variante monoacetilada
+`K9ac` muestra un solapamiento casi total entre ambas condiciones
+celulares que visualiza la incertidumbre de su estimación; la forma
+doblemente acetilada `K9acK14ac` sufre una caída rotunda reflejada en el
+desplazamiento de su curva mitótica hacia la izquierda (depleción
+máxima); por el contrario, la variante metilada-fosforilada `K9me1S10ph`
+exhibe curvas por completo disjuntas debido a un incremento masivo hacia
+la derecha provocado por la entrada en mitosis; y, por último, la forma
+híbrida `S10phK14ac` constituye el eje de la discusión al acumularse
+nítidamente hacia la derecha en la fase de división, confirmando que la
+presencia conjunta de la fosforilación en la Serina 10 actúa como un
+factor condicionante que detiene la desacetilación y reorganiza de forma
+ordenada las abundancias en el símplex.
+
+Este comportamiento desigual muestra que la desacetilación mitótica
+depende del estado de fosforilación. Para aislar estas relaciones y
+evitar los efectos de cierre que sufren las proporciones individuales,
+el resto del análisis se realiza utilizando balances en coordenadas ILR.
+
+## Análisis de la Reorganización Composicional mediante Balances ILR
+
+### Definición de los Balances Secuenciales
+
+Para aislar las interdependencias entre modificaciones y resolver los
+efectos de cierre en el símplex, transformamos las abundancias relativas
+en coordenadas ILR. Siguiendo los criterios metodológicos habituales
+para la descomposición jerárquica de la masa composicional
+[@egozcue2003; @greenacre2021], definimos cuatro balances ortogonales
+($z_1, z_2, z_3, z_4$) diseñados específicamente para contrastar las
+hipótesis moleculares de este trabajo:
+
+Para dos grupos de proteoformas $A$ y $B$, con tamaños $|A| = r$ y
+$|B| = s$, el balance ILR usado es
+
+$$z_{A/B}
+=
+\sqrt{\frac{rs}{r+s}}
+\left[
+\frac{1}{r}\sum_{i \in A}\log Q_i
+-
+\frac{1}{s}\sum_{j \in B}\log Q_j
+\right].$$
+
+Aquí $Q_i$ representa la proporción posterior de la proteoforma $i$ en
+una condición dada.
+
+1.  **Balance de la Fosforilación (**$z_1$): Contrasta el conjunto de
+    proteoformas que portan la fosforilación en la Serina 10 frente a
+    las que carecen de ella para cuantificar el cambio global de esta
+    marca.
+
+$$z_1
+=
+z_{\mathrm{S10ph}/\mathrm{NoS10ph}}
+=
+\sqrt{
+\frac{
+|\mathcal{S}_{10\mathrm{ph}}|
+|\mathcal{S}_{\neg 10\mathrm{ph}}|
+}{
+|\mathcal{S}_{10\mathrm{ph}}| +
+|\mathcal{S}_{\neg 10\mathrm{ph}}|
+}
+}
+\left[
+\frac{1}{|\mathcal{S}_{10\mathrm{ph}}|}
+\sum_{i \in \mathcal{S}_{10\mathrm{ph}}}
+\log Q_i
+-
+\frac{1}{|\mathcal{S}_{\neg 10\mathrm{ph}}|}
+\sum_{j \in \mathcal{S}_{\neg 10\mathrm{ph}}}
+\log Q_j
+\right].$$
+
+Este balance compara todas las proteoformas con fosforilación en S10
+frente a todas las proteoformas sin fosforilación en S10.
+
+2.  **Balance de la Acetilación en Ausencia de Fosforilación (**$z_2$):
+    Dentro del sustrato no fosforilado ($\text{S10ph}^{-}$), compara las
+    formas acetiladas frente a las metiladas puras o no modificadas.
+    Evalúa la hipótesis clásica de la desacetilación mitótica residual.
+
+$$z_2
+=
+z_{\mathrm{Ac}/\mathrm{NoAc}\mid \mathrm{S10ph}^{-}}
+=
+\sqrt{
+\frac{
+|\mathcal{A}_{\neg 10\mathrm{ph}}|
+|\mathcal{N}_{\neg 10\mathrm{ph}}|
+}{
+|\mathcal{A}_{\neg 10\mathrm{ph}}| +
+|\mathcal{N}_{\neg 10\mathrm{ph}}|
+}
+}
+\left[
+\frac{1}{|\mathcal{A}_{\neg 10\mathrm{ph}}|}
+\sum_{i \in \mathcal{A}_{\neg 10\mathrm{ph}}}
+\log Q_i
+-
+\frac{1}{|\mathcal{N}_{\neg 10\mathrm{ph}}|}
+\sum_{j \in \mathcal{N}_{\neg 10\mathrm{ph}}}
+\log Q_j
+\right].$$
+
+Aquí $\mathcal{A}_{\neg 10\mathrm{ph}}$ es el conjunto de proteoformas
+acetiladas sin S10ph, y $\mathcal{N}_{\neg 10\mathrm{ph}}$ es el
+conjunto de proteoformas no acetiladas sin S10ph.
+
+3.  **Balance de la Acetilación en Presencia de Fosforilación (**$z_3$):
+    Dentro del sustrato fosforilado ($\text{S10ph}^{+}$), compara las
+    formas que retienen acetilaciones frente a las
+    metiladas-fosforiladas o fosforiladas puras. Es el balance crítico
+    para verificar si la fosforilación actúa como escudo protector de la
+    acetilación.
+
+$$z_3
+=
+z_{\mathrm{Ac}/\mathrm{NoAc}\mid \mathrm{S10ph}^{+}}
+=
+\sqrt{
+\frac{
+|\mathcal{A}_{10\mathrm{ph}}|
+|\mathcal{N}_{10\mathrm{ph}}|
+}{
+|\mathcal{A}_{10\mathrm{ph}}| +
+|\mathcal{N}_{10\mathrm{ph}}|
+}
+}
+\left[
+\frac{1}{|\mathcal{A}_{10\mathrm{ph}}|}
+\sum_{i \in \mathcal{A}_{10\mathrm{ph}}}
+\log Q_i
+-
+\frac{1}{|\mathcal{N}_{10\mathrm{ph}}|}
+\sum_{j \in \mathcal{N}_{10\mathrm{ph}}}
+\log Q_j
+\right].$$
+
+Aquí $\mathcal{A}_{10\mathrm{ph}}$ es el conjunto de proteoformas
+acetiladas con S10ph, y $\mathcal{N}_{10\mathrm{ph}}$ es el conjunto de
+proteoformas no acetiladas con S10ph.
+
+4.  **Balance de Grado de Acetilación (**$z_4$): Compara el peso de las
+    variantes monoacetiladas frente a las doblemente acetiladas para
+    calibrar la profundidad del aclaramiento de los grupos acetilo.
+
+$$z_4
+=
+z_{\mathrm{MonoAc}/\mathrm{DiAc}}
+=
+\sqrt{
+\frac{
+|\mathcal{M}_{\mathrm{Ac}}|
+|\mathcal{D}_{\mathrm{Ac}}|
+}{
+|\mathcal{M}_{\mathrm{Ac}}| +
+|\mathcal{D}_{\mathrm{Ac}}|
+}
+}
+\left[
+\frac{1}{|\mathcal{M}_{\mathrm{Ac}}|}
+\sum_{i \in \mathcal{M}_{\mathrm{Ac}}}
+\log Q_i
+-
+\frac{1}{|\mathcal{D}_{\mathrm{Ac}}|}
+\sum_{j \in \mathcal{D}_{\mathrm{Ac}}}
+\log Q_j
+\right].$$
+
+Aquí $\mathcal{M}_{\mathrm{Ac}}$ es el conjunto de proteoformas
+monoacetiladas, es decir, con una única acetilación en K9ac o K14ac, y
+$\mathcal{D}_{\mathrm{Ac}}$ es el conjunto de proteoformas diacetiladas,
+es decir, con acetilación simultánea en K9ac y K14ac.
+
+En el marco del análisis de datos composicionales (CoDa), las
+coordenadas ILR actúan como balances geométricos entre dos grupos de
+componentes. Así, un incremento en la coordenada ($\Delta z > 0$) al
+pasar a la mitosis refleja un desplazamiento de la masa composicional
+hacia el primer grupo (numerador), mientras que un descenso
+($\Delta z < 0$) indica una concentración en el segundo (denominador).
+Por tanto, la dirección del cambio no implica una variación en términos
+absolutos, sino que los componentes del numerador se han vuelto más
+dominantes ($\Delta z > 0$) o menos dominantes ($\Delta z < 0$) en
+proporción a los del denominador.
+
+```{r}
+#| label: tbl-balances-z
+#| tbl-cap: "Balances ILR posteriores de fosforilación y acetilación bajo el modelo Dirichlet epistático."
+
+tabla_balances_fmt <- tabla_balances %>%
+  transmute(
+    Balance = etiqueta %>%
+      stringr::str_replace_all("\\|", "en") %>%
+      stringr::str_replace_all("S10ph-", "No-S10ph") %>%
+      stringr::str_replace_all("S10ph\\+", "S10ph"),
+    #`Asinc. mediana` = sprintf("%.3f", mediana_asincronia),
+    #`IC95 asinc.` = sprintf("[%.3f, %.3f]", q025_asincronia, q975_asincronia),
+    #`Mitosis mediana` = sprintf("%.3f", mediana_mitosis),
+    #`IC95 mitosis` = sprintf("[%.3f, %.3f]", q025_mitosis, q975_mitosis),
+    `Dif. mitosis-asinc.` = sprintf("%.3f", diff_mediana),
+    `IC95 diferencia` = sprintf("[%.3f, %.3f]", diff_q025, diff_q975),
+    `P(diff > 0)` = sprintf("%.3f", diff_p_gt_0),
+    #`P(diff < 0)` = sprintf("%.3f", diff_p_lt_0)
+  )
+
+knitr::kable(
+  tabla_balances_fmt,
+  booktabs = TRUE,
+  align = c("l", rep("r", 8))
+) %>%
+  kableExtra::kable_styling(
+    full_width = FALSE,
+    font_size = 10,
+    latex_options = "HOLD_position"
+  )
+  #kableExtra::landscape()
+```
+
+### Estimaciones y análisis de los cambios en los balances
+
+En la @tbl-balances-z se presentan las estimaciones a posteriori de la
+diferencia en los balances ILR
+($\Delta z = z_{\text{mitosis}} - z_{\text{asíncrona}}$) obtenidos para
+el modelo de referencia.
+
+Los resultados de los balances muestran cómo se redistribuyen las
+proteoformas en la mitosis:
+
+- Incremento de la fosforilación $z_1$: El cambio positivo en la
+  coordenada $\text{Media} = 8.809$, IC95% $[7.987, 9.655]$) confirma la
+  acumulación generalizada de la fosforilación en la Serina 10, con una
+  probabilidad a posteriori del 100%.
+
+- Estabilidad de la acetilación en ausencia de fosforilación ($z_2$): En
+  las variantes que carecen de la marca $\text{S10ph}$, el balance de
+  formas acetiladas frente a no acetiladas apenas varía. La diferencia
+  se sitúa cerca de cero ($-0.088$) y su intervalo de credibilidad cruza
+  el origen ($[-0.517, 0.325]$), lo que indica que no hay una
+  desacetilación general en este grupo.
+
+- Desacetilación vinculada a la fosforilación ($z_3$): Dentro del
+  sustrato fosforilado ($\text{S10ph}^{+}$), el balance disminuye
+  ($\text{Media} = -1.287$, IC95% $[-2.201, -0.344]$). Esto indica una
+  reducción de las formas acetiladas en favor de las no acetiladas, lo
+  que confirma que la pérdida de grupos acetilo se concentra en las
+  moléculas que ya portan la fosforilación.
+
+- Cambio en el grado de acetilación ($z_4$): El aumento en este balance
+  ($\text{Media} = 2.296$, IC95% $[0.948, 3.591]$) indica que, dentro de
+  las variantes que conservan acetilaciones, las formas monoacetiladas
+  ganan peso frente a las doblemente acetiladas (K9acK14ac).
+
+```{r}
+#| label: fig-balances-acetilacion-epistasia
+#| fig-cap: "Distribuciones posteriores de los balances ILR de acetilación por condición."
+
+balances_long %>%
+  mutate(
+    condicion = recode(condicion, asincronia = "Asincronía", mitosis = "Mitosis")
+  ) %>%
+  ggplot(aes(x = valor, fill = condicion, colour = condicion)) +
+  geom_density(alpha = 0.25, linewidth = 0.4) +
+  facet_wrap(~ etiqueta, scales = "free") +
+  labs(
+    x = "Balance ILR",
+    y = "Densidad posterior",
+    fill = "Condición",
+    colour = "Condición"
+  ) +
+  theme_minimal()
+```
+
+La @fig-balances-acetilacion-epistasia muestra cómo cambia la abundancia
+de las proteoformas. Mientras que las curvas del balance $z_1$ se
+separan por completo debido al aumento de la fosforilación en mitosis,
+las densidades de la acetilación en el sustrato no fosforilado ($z_2$)
+permanecen casi superpuestas, lo que indica que no hay una
+desacetilación general. Por el contrario, el balance $z_3$ se desplaza
+claramente hacia la izquierda en mitosis, lo que demuestra que la
+pérdida de grupos acetilo ocurre solo en las moléculas ya fosforiladas
+en la Serina 10. Este proceso, además, favorece a las variantes
+monoacetiladas frente a las diacetiladas ($z_4$).
+
+El análisis mediante balances ILR muestra que la mitosis no induce una
+desacetilación global en toda la población de histonas. La pérdida de
+grupos acetilo y la reducción de formas diacetiladas a monoacetiladas se
+concentran de manera exclusiva en las moléculas que ya han sido
+fosforiladas en la Serina 10.

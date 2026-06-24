@@ -1,0 +1,860 @@
+---
+title: "Modelos bayesianos"
+---
+
+## Modelos considerados
+
+Para analizar la naturaleza composicional de los datos y evaluar las diferencias entre las condiciones experimentales, se han estudiado tres familias de modelos bayesianos: la regresión de Dirichlet, los modelos de Dirichlet con campo epistático y los modelos logístico-normales con regularización epistática [@aitchison1986; @pawlowsky-glahn2006; @hijazi2009; @zhou2020; @chen2021; @martínez-minaya2023].
+
+Cada familia incluye variantes con estructuras de precisión más o menos flexibles [@lindgren2011; @sidén2018; @ying2021]. Asimismo, se ha evaluado la inclusión de un efecto aleatorio por día con el fin de absorber la variabilidad técnica entre los experimentos [@johnson2006; @martínez-minaya2024]. De este modo, el conjunto de modelos analizado abarca diferentes niveles de complejidad e hipótesis sobre la dependencia composicional de las proteoformas[@greenacre2021; @quinn2019; @mackay2014].
+
+En los siguientes apartados se detalla la formulación de cada familia y se comparan sus criterios de ajuste [@vehtari2017; @vehtari2012]. El objetivo es identificar el modelo que mejor reproduce los datos experimentales y que sirva de base para la interpretación biológica [@gelman; @gelman2014; @talts].
+
+### Modelos de regresión de Dirichlet
+
+Como punto de partida, se utilizó la regresión de Dirichlet para describir la distribución composicional de las proteoformas del fragmento 9–17 de la histona H3 [@hijazi2009; @maier2014; @sennhenn-reulen]. Esta familia de modelos constituye una opción natural para datos composicionales, ya que permite analizar directamente vectores de proporciones definidos en el símplex y se apoya en la teoría clásica de datos composicionales [@aitchison1986; @pawlowsky-glahn2006; @greenacre2021]. Además, distingue de forma explícita entre la media composicional y el grado de dispersión alrededor de esta mediante una parametrización de tipo media–precisión [@maier2014].
+
+Sea $Y_n = (Y_{n1}, \dots, Y_{nK})$ la composición observada en la muestra $n = 1, \dots, N$, donde las $K$ componentes representan las distintas proteoformas, y sea $x_n$ la fila correspondiente de la matriz de diseño $X$. En todos los modelos de esta familia se asume que:
+
+$$Y_n \mid \alpha_n \sim \mathrm{Dirichlet}(\alpha_n), \qquad
+\alpha_n = \phi_n \mu_n, \qquad
+\mu_n = \mathrm{softmax}(\eta_n),$$
+
+siguiendo la reparametrización en términos de media y parámetro de precisión propuesta para la regresión de Dirichlet [@hijazi2009; @maier2014].
+
+Aquí, $\mu_n$ es la media composicional y $\phi_n$ es el parámetro de precisión (o concentración). En esta parametrización, los valores elevados de $\phi_n$ indican composiciones más concentradas alrededor de la media, mientras que los valores pequeños reflejan una mayor dispersión, de acuerdo con las propiedades de la distribución de Dirichlet [@hijazi2009; @sennhenn-reulen2018]. La estructura de la media se define mediante un predictor lineal para cada componente: $$\eta_{n1} = 0, \qquad
+\eta_{nk} = x_n^\top \beta_k + \text{(efecto de día, si aplica)}, \qquad k = 2, \dots, K,$$ lo que es análogo a un modelo lineal generalizado multivariante sobre el símplex [@maier2014].
+
+De este modo, la primera categoría actúa como referencia. Esta estructura permite incorporar los efectos de las covariables experimentales sobre la composición media, mientras que la transformación softmax asegura que se mantenga la restricción de suma uno y que las componentes permanezcan en el interior del símplex [@egozcue2006; @vandenboogaart2013].
+
+A partir de esta estructura común, se evaluaron cuatro variantes al combinar el tipo de precisión (global o dependiente de la condición experimental) y la inclusión o no de un efecto aleatorio por día. Este diseño permite comprobar si la heterogeneidad entre condiciones y la variabilidad técnica entre fechas distintas son componentes esenciales para reproducir correctamente los datos observados, en línea con las extensiones mixtas y con efectos estructurados propuestas para modelos bayesianos de datos composicionales [@martínez-minaya2023; @martínez-minaya2024].
+
+### Modelos de Dirichlet con campo epistático {#sec-dirichlet-epistatico}
+
+Como segunda familia, se estudiaron modelos de Dirichlet en los que la media composicional no se describe mediante un predictor lineal convencional, sino a partir de un campo epistático específico para cada condición experimental [@zhou2020; @chen2021; @martí-gómez]. La idea central es que la composición de cada muestra sigue una distribución de Dirichlet cuya media se obtiene al aplicar la transformación softmax a un campo energético, mientras que la dispersión alrededor de la media se regula mediante el parámetro de concentración $\kappa$, de forma análoga a otros modelos jerárquicos para datos composicionales [@harrison2020; @hijazi2009].
+
+Sea $Y_n = (Y_{n1}, \dots, Y_{nK})$ la composición observada en la muestra $n$, donde las $K$ componentes corresponden a las distintas proteoformas. En esta familia se asume que
+
+$$Y_n \mid \alpha_n \sim \mathrm{Dirichlet}(\alpha_n),$$
+
+donde el vector de parámetros puede escribirse como $$\alpha_n = \kappa_n\,Q_n.$$ Bajo esta parametrización, $Q_n$ representa la media composicional del modelo, mientras que $\kappa_n$ es el parámetro de precisión o concentración: valores altos de $\kappa_n$ implican menor dispersión alrededor de la media y valores bajos mayor variabilidad, siguiendo la interpretación estándar de la distribución de Dirichlet [@hijazi2009].
+
+La media composicional se obtiene a partir de un campo epistático $\phi_c = (\phi_{1c}, \dots, \phi_{Kc})$ definido para cada condición experimental $c$, en la línea de otros campos energéticos utilizados para describir mapas genotipo–fenotipo [@zhou2020; @martí-gómez]. Como la transformación softmax no varía si se suma una constante común a todos los componentes, el modelo original presenta una redundancia: infinitas combinaciones de parámetros producen exactamente las mismas proporciones finales [@andriamanalimanana2019]. Para eliminar esta indeterminación y asegurar la estabilidad numérica del algoritmo de muestreo, se impone una restricción de suma cero en el campo ($\sum_{k} \phi_{kc} = 0$), fijando así una única solución válida que permite identificar el modelo sin alterar los resultados biológicos, de forma análoga a otras construcciones en espacios composicionales [@egozcue2006; @mateu-figueras]. A continuación, los elementos de la media se calculan mediante la expresión:
+
+$$Q_{kc} = \frac{\exp(-\phi_{kc})}{\sum_{j=1}^K \exp(-\phi_{jc})}, \qquad k=1,\dots,K.$$
+
+De este modo, el campo epistático modela directamente la estructura de la media composicional, mientras que el parámetro $\kappa$ recoge la precisión.
+
+La regularización utiliza una distribución a priori de mínima epistasia basada en el operador $\Delta$, que penaliza las desviaciones respecto a la aditividad en el espacio de modificaciones [@zhou2020, @martí-gómez]. Así, la inferencia favorece configuraciones con una estructura epistática regular, donde el parámetro $a_c$ controla la intensidad de la regularización según la información de los datos [@chen2021; @martí-gómez].
+
+A partir de esta estructura común, se evaluaron cuatro variantes combinando el tipo de concentración $\kappa$ (común o específica por condición) y la inclusión o no de un efecto aleatorio por día. Este efecto permite que la media composicional varíe tanto entre las condiciones experimentales como entre las distintas fechas de medición, siguiendo la filosofía de los modelos mixtos bayesianos con efectos estructurados [@martínez-minaya2023; @martínez-minaya2024]. Cuando se omite, la media depende únicamente del campo epistático de cada condición. Al incorporar este término, el campo efectivo de cada observación se obtiene sumando al de la condición un desplazamiento específico del día experimental. Este desplazamiento se restringe a suma cero para evitar redundancias en los parámetros, permitiendo que el efecto por día añada la heterogeneidad técnica necesaria sin alterar la interpretación biológica del modelo [@johnson2006].
+
+En conjunto, esta familia extiende la regresión de Dirichlet clásica al proponer una representación estructurada de la media basada en interacciones epistáticas entre proteoformas. Su principal ventaja es que separa la localización de la composición media (determinada por el campo epistático y su regularización mediante el operador $\Delta$) de la dispersión de los datos (regulada por el parámetro de concentración $\kappa$), en línea con otros modelos epistáticos que diferencian explícitamente forma del paisaje y ruido experimental [@zhou2020; @chen2021]. Además, la inclusión opcional del efecto aleatorio por día permite evaluar si una parte de la variabilidad responde a factores técnicos del experimento, algo especialmente relevante en estudios de alto rendimiento sobre modificaciones de histonas y proteoformas [@paparella2022].
+
+### Modelos logístico-normales con regularización epistática
+
+Como tercera familia, se estudiaron los modelos logístico-normales con regularización epistática, planteados como alternativa a los modelos de Dirichlet para describir la distribución composicional de las proteoformas del fragmento 9–17 de la histona H3 [@aitchison1986; @vandenboogaart2013; @martínez-minaya2024]. En este enfoque, las composiciones no se analizan directamente en el símplex, sino que se transforman a un espacio euclídeo mediante coordenadas log-ratio isométricas (ILR), lo que permite utilizar modelos gaussianos multivariantes sobre datos composicionales [@egozcue2006; @mateu-figueras]. Esto permite utilizar una formulación gaussiana multivariante para la componente estocástica del modelo y aprovechar herramientas estándar de modelos lineales y gaussiano-latentes [@filzmoser2018].
+
+Sea $Y_n = (Y_{n1}, \dots, Y_{nK})$ la composición en la muestra $n = 1, \dots, N$, con $K$ componentes. Tras aplicar la transformación ILR, se obtiene un vector $$Z_n = \mathrm{ILR}(Y_n) \in \mathbb{R}^{K-1},$$ y se asume que, condicionalmente a los parámetros, las coordenadas transformadas siguen una distribución normal multivariante, $$Z_n \mid \mu_n, Q \sim \mathcal{N}_{K-1}\left(\mu_n, Q^{-1}\right),$$ donde $\mu_n$ representa la media en el espacio ILR y $Q$ es la matriz de precisión que describe la dependencia entre las coordenadas [@mateu-figueras; @martínez-minaya2024]. Esta formulación permite trabajar en un espacio lineal, donde tanto la media como la covarianza se pueden analizar de manera más flexible que en la familia de Dirichlet, manteniendo la coherencia con la geometría composicional subyacente [@aitchison1986].
+
+La media de cada observación se define mediante la matriz de diseño y una matriz de coeficientes en coordenadas ILR. En las variantes sin efecto de día, la media se expresa como una combinación lineal de las covariables, mientras que en las variantes con efecto aleatorio se añade un término específico para cada fecha experimental, siguiendo la estructura de modelos mixtos gaussianos latentes [@gómez-rubio2020; @martínez-minaya2024]. Esta estructura permite separar los efectos fijos de las condiciones biológicas de la variabilidad técnica entre días, algo especialmente relevante en estudios ómicos de alta dimensión [@quinn2019].
+
+En esta familia, la dependencia entre las coordenadas ILR no se define mediante una matriz de covarianza libre, sino a través de una matriz de precisión estructurada de la forma: $$Q = \tau\,\Delta_{\text{shape}} + D,$$ donde $\tau > 0$ es el parámetro que regula la intensidad global de la regularización epistática, $\Delta_{\text{shape}}$ es la versión reescalada del mismo operador $\Delta$ utilizado en la distribución a priori de los modelos de Dirichlet descritos en @sec-dirichlet-epistatico, y $D$ es una matriz diagonal de precisión residual. De este modo, $Q$ combina una componente estructurada, guiada por la geometría epistática que codifica el operador $\Delta$, con una componente residual que recoge la variación no explicada por esa estructura, en espíritu similar a otros modelos que imponen suavidad y mínima epistasia sobre campos energéticos [@zhou2020; @chen2021].
+
+Las variantes de esta familia se obtienen combinando el tipo de precisión residual (común o específica para cada coordenada ILR) y la inclusión o no de un efecto aleatorio por día que recoja la variabilidad técnica entre réplicas. Este planteamiento sigue la filosofía de los modelos logístico-normales mixtos para datos composicionales, donde la estructura de covarianza puede adaptarse a diferentes niveles de complejidad [@martínez-minaya2024].
+
+Aunque el ajuste se realiza en el espacio ILR, los coeficientes y las predicciones se proyectan de nuevo al símplex original. Esto permite interpretar los resultados en proporciones relativas de proteoformas y compararlos directamente con los modelos anteriores, en línea con las recomendaciones habituales de trabajo en coordenadas log-ratio y posterior interpretación en el espacio composicional original [@vandenboogaart2013; @greenacre2021]. De este modo, la familia logístico-normal funciona como una alternativa flexible para evaluar si una formulación gaussiana en el espacio ILR, combinada con la regularización epistática, mejora la representación de los datos [@martínez-minaya2024].
+
+## Diagnóstico del ajuste y convergencia
+
+Para evaluar la fiabilidad de las estimaciones bayesianas, se analizan tres indicadores globales del muestreo MCMC en los doce modelos estudiados: el número de transiciones divergentes, el valor máximo de $\hat{R}$ y el tamaño efectivo mínimo de muestra [@gelman2014; @gelman; @gabry2019]. Estos diagnósticos permiten comprobar si las cadenas han explorado adecuadamente la distribución a posteriori y forman parte de las recomendaciones estándar en flujos de trabajo bayesianos [@talts; @vehtari2017]. De este modo, se asegura que las comparaciones entre modelos reflejen diferencias reales de ajuste y no artefactos numéricos, evitando conclusiones engañosas debidas a problemas de convergencia o mezcla deficiente de las cadenas [@talts; @gelman].
+
+```{r}
+#| label: setup-diagnosticos-global
+#| include: false
+
+library(dplyr)
+library(purrr)
+library(tibble)
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+#| label: setup-paths
+#| include: false
+
+# getwd() ≈ .../RProyecto_composicional/Informes/Proyecto
+root_dir  <- getwd()
+
+# Carpeta de imágenes dentro del book
+img_dir   <- file.path(root_dir, "Imagenes")
+
+# Carpeta de datos en la raíz del proyecto
+datos_dir <- file.path(root_dir, "..", "..", "DatosProcesados")
+```
+
+```{r}
+#| label: carga-ajustes-diagnosticos
+#| include: false
+#| message: false
+#| warning: false
+
+library(here)
+
+# Cargar cada familia solo si sus objetos principales no están ya en memoria.
+if (!exists("fit_dirich_phi_cond")) {
+  load(file.path(datos_dir, "stan_dirichlet_fits.Rdata"))
+}
+
+if (!exists("fit_kappa_comun")) {
+  load(file.path(datos_dir, "stan_epistasia_fits.Rdata"))
+}
+
+if (!exists("fit_lognor_v1_sum0coef_revisado")) {
+  load(file.path(datos_dir, "stan_lognormal_sum0_fits_revisados.Rdata"))
+}
+```
+
+```{r}
+#| label: tbl-diagnosticos-globales
+#| tbl-cap: "Diagnósticos globales de convergencia y estabilidad numérica para los doce modelos bayesianos ajustados."
+
+diag_dirich_tab <- purrr::map2_df(
+  .x = names(diag_dirich),
+  .y = diag_dirich,
+  .f = ~ tibble(
+    Familia = "Dirichlet clásico",
+    Modelo = dplyr::recode(
+      .x,
+      "phi_comun"     = "Precisión común",
+      "phi_cond"      = "Precisión por condición",
+      "phi_comun_dia" = "Precisión común + día",
+      "phi_cond_dia"  = "Precisión por condición + día"
+    ),
+    Divergencias = .y$divergences,
+    `max Rhat` = .y$max_rhat,
+    `min ESS` = .y$min_neff
+  )
+)
+
+diag_epist_tab <- dplyr::bind_rows(
+  tibble(
+    Familia = "Dirichlet epistático",
+    Modelo = "kappa común",
+    Divergencias = diag_comun$divergences,
+    `max Rhat` = diag_comun$max_rhat,
+    `min ESS` = diag_comun$min_neff
+  ),
+  tibble(
+    Familia = "Dirichlet epistático",
+    Modelo = "kappa por condición",
+    Divergencias = diag_cond$divergences,
+    `max Rhat` = diag_cond$max_rhat,
+    `min ESS` = diag_cond$min_neff
+  ),
+  tibble(
+    Familia = "Dirichlet epistático",
+    Modelo = "kappa común + día",
+    Divergencias = diag_comun_dia$divergences,
+    `max Rhat` = diag_comun_dia$max_rhat,
+    `min ESS` = diag_comun_dia$min_neff
+  ),
+  tibble(
+    Familia = "Dirichlet epistático",
+    Modelo = "kappa por condición + día",
+    Divergencias = diag_cond_dia$divergences,
+    `max Rhat` = diag_cond_dia$max_rhat,
+    `min ESS` = diag_cond_dia$min_neff
+  )
+)
+
+diag_lognor_tab <- dplyr::bind_rows(
+  tibble(
+    Familia = "Log-normal epistático",
+    Modelo = "Base",
+    Divergencias = diag_lognor_v1_sum0coef_revisado$divergences,
+    `max Rhat` = diag_lognor_v1_sum0coef_revisado$max_rhat,
+    `min ESS` = diag_lognor_v1_sum0coef_revisado$min_neff
+  ),
+  tibble(
+    Familia = "Log-normal epistático",
+    Modelo = "Base + día",
+    Divergencias = diag_lognor_v1_dia_sum0coef_revisado$divergences,
+    `max Rhat` = diag_lognor_v1_dia_sum0coef_revisado$max_rhat,
+    `min ESS` = diag_lognor_v1_dia_sum0coef_revisado$min_neff
+  ),
+  tibble(
+    Familia = "Log-normal epistático",
+    Modelo = "Común",
+    Divergencias = diag_lognor_v1_sum0coef_delta_comun_revisado$divergences,
+    `max Rhat` = diag_lognor_v1_sum0coef_delta_comun_revisado$max_rhat,
+    `min ESS` = diag_lognor_v1_sum0coef_delta_comun_revisado$min_neff
+  ),
+  tibble(
+    Familia = "Log-normal epistático",
+    Modelo = "Común + día",
+    Divergencias = diag_lognor_v1_dia_sum0coef_delta_comun_revisado$divergences,
+    `max Rhat` = diag_lognor_v1_dia_sum0coef_delta_comun_revisado$max_rhat,
+    `min ESS` = diag_lognor_v1_dia_sum0coef_delta_comun_revisado$min_neff
+  )
+)
+
+tabla_diagnosticos_globales <- bind_rows(
+  diag_dirich_tab,
+  diag_epist_tab,
+  diag_lognor_tab
+)
+
+tabla_diagnosticos_globales |>
+  kbl(
+    digits = c(0, 0, 0, 3, 0),
+    align = c("l", "l", "c", "c", "c"),
+    booktabs = TRUE
+  ) |>
+  kable_styling(full_width = FALSE)
+```
+
+La @tbl-diagnosticos-globales resume los indicadores de convergencia y estabilidad numérica obtenidos mediante el muestreo MCMC para las tres familias de modelos. En todas las formulaciones analizadas, el número de transiciones divergentes es cero, los valores máximos de $\hat{R}$ permanecen por debajo de 1.01 y y los tamaños efectivos de muestra mínimos superan ampliamente el umbral de referencia de 400 , incluso en los modelos más complejos que incorporan el efecto aleatorio por día. Esta convergencia óptima garantiza la estabilidad de las estimaciones y confirma que las diferencias detectadas en los siguientes apartados —en cuanto a PPC, capacidad predictiva o separación KL— responden estrictamente a la estructura estadística de cada modelo y no a deficiencias del algoritmo de inferencia.
+
+## Capacidad de reproducir la estructura global de los datos
+
+### Criterio de compatibilidad mediante PPC
+
+La capacidad de los modelos para reproducir la estructura global de los datos se evaluó mediante comprobaciones predictivas a posteriori (posterior predictive checks, PPC), en las que cada modelo ajustado se utiliza para generar réplicas composicionales $Y_{\mathrm{rep}}$ a partir de su distribución predictiva a posteriori [@gelman2014; @gelman]. A continuación, se calculan sobre estas réplicas los mismos estadísticos que en los datos reales para comparar ambos resultados, siguiendo un esquema estándar de evaluación predictiva bayesiana [@vehtari2012; @gabry2019].
+
+Para esta evaluación se consideraron dos indicadores globales complementarios del comportamiento composicional:
+
+- El centroide en el espacio de Aitchison, que resume la localización global de la nube composicional y es una medida canónica de centro para datos composicionales [@aitchison1986; @pawlowsky-glahn2006].
+- La variación total en coordenadas CLR, que cuantifica la dispersión global de las composiciones y se relaciona directamente con la matriz de varianzas y covarianzas en el espacio de Aitchison [@daunis-i-estadella2006; @greenacre2021].
+
+A partir de las réplicas $Y_{\mathrm{rep}}$, se determinó, para cada indicador, la probabilidad de significación predictiva a posteriori, conocida como valor $p$ predictivo. Esta probabilidad evalúa la posición relativa del valor observado en relación con la distribución de los valores generados por el modelo y constituye una herramienta estándar para detectar discrepancias sistemáticas entre modelo y datos [@berkhof2000; @gelman2013]. De este modo, los valores intermedios indican una adecuada compatibilidad entre los datos reales y los replicados, mientras que los valores extremos sugieren que el modelo no reproduce correctamente ese aspecto de la distribución.
+
+De acuerdo con el criterio establecido en las fases anteriores del análisis, se determinó que un modelo reproduce adecuadamente un estadístico cuando su valor $p$ predictivo se encuentra en el intervalo $[0.1,\,0.9]$, umbral que se sitúa en la franja habitualmente recomendada para evitar interpretaciones excesivamente estrictas de los valores $p$ predictivos [@gelman2013; @gelman]. En consecuencia, los valores cercanos a 0 o a 1 se interpretan como indicativos de un ajuste deficiente en ese aspecto específico de la distribución, ya sea por un déficit o por un exceso en la estimación de la estructura observada.
+
+Este criterio no funciona como una regla de descarte estricta, sino como una guía homogénea para comparar los doce modelos estudiados dentro de un mismo marco de PPC [@vehtari2017; @gabry2019]. Sobre esta base, en el siguiente apartado se examina qué formulaciones reproducen mejor el centro composicional y la dispersión global de los datos experimentales, combinando la información de los valores $p$ predictivos con otros criterios de ajuste y capacidad predictiva.
+
+### Centroide composicional y variación CLR
+
+En este apartado se comparan las doce formulaciones estudiadas a partir de sus comprobaciones predictivas a posteriori globales, siguiendo el enfoque de evaluación predictiva bayesiana basado en PPC [@vehtari2012; @gelman]. En concreto, se analizan los valores $p$ predictivos asociados al centroide en el espacio de Aitchison y a la variación total en coordenadas CLR, con el fin de evaluar si cada modelo es capaz de reproducir la localización y la dispersión global de la nube composicional real [@aitchison1986; @greenacre2021].
+
+```{r}
+#| label: carga-ppc-global-12-modelos
+#| message: false
+#| warning: false
+#| include: false
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(knitr)
+library(kableExtra)
+library(here)
+
+# Dirichlet clásico
+ppc_dirich <- read_csv(
+  file.path(datos_dir, "PPC", "resumen_ppc_todos_modelos_completo.csv"),
+  show_col_types = FALSE
+) |>
+  filter(
+    bloque_ppc == "global",
+    estadistico %in% c("centroide_aitchison", "variacion_total_clr")
+  ) |>
+  mutate(
+    familia = "Dirichlet clásico",
+    modelo = recode(
+      modelo,
+      "phi_comun"     = "phi común",
+      "phi_cond"      = "phi por condición",
+      "phi_comun_dia" = "phi común + día",
+      "phi_cond_dia"  = "phi por condición + día"
+    )
+  ) |>
+  select(familia, modelo, estadistico, p_ppc)
+
+# Dirichlet epistático
+ppc_epi <- read_csv(
+  here(datos_dir, "PPC_Epistasia", "resumen_ppc_epistasia_todos_modelos.csv"),
+  show_col_types = FALSE
+) |>
+  filter(
+    bloque_ppc == "global",
+    estadistico %in% c("centroide_aitchison", "variacion_total_clr")
+  ) |>
+  mutate(
+    familia = "Dirichlet epistático",
+    modelo = recode(
+      modelo,
+      "kappa_comun"     = "kappa común",
+      "kappa_cond"      = "kappa por condición",
+      "kappa_comun_dia" = "kappa común + día",
+      "kappa_cond_dia"  = "kappa por condición + día"
+    )
+  ) |>
+  select(familia, modelo, estadistico, p_ppc)
+
+# Log-normal epistático
+ppc_lognor <- read_csv(
+  here(datos_dir, "PPC_Lognormal_Sum0_Revisados", "resumen_ppc_lognormal_sum0_modelos_revisados.csv"),
+  show_col_types = FALSE
+) |>
+  filter(
+    bloque_ppc == "global",
+    estadistico %in% c("centroide_aitchison", "variacion_total_clr")
+  ) |>
+  mutate(
+    familia = "Log-normal epistático",
+    modelo = recode(
+      modelo,
+      "lognor_v1_sum0coef_revisado"                 = "base",
+      "lognor_v1_dia_sum0coef_revisado"             = "base + día",
+      "lognor_v1_sum0coef_delta_comun_revisado"     = "delta común",
+      "lognor_v1_dia_sum0coef_delta_comun_revisado" = "delta común + día"
+    )
+  ) |>
+  select(familia, modelo, estadistico, p_ppc)
+
+ppc_global_12 <- bind_rows(ppc_dirich, ppc_epi, ppc_lognor) |>
+  mutate(
+    estadistico = recode(
+      estadistico,
+      "centroide_aitchison" = "Centroide",
+      "variacion_total_clr" = "Variación CLR"
+    )
+  ) |>
+  pivot_wider(
+    names_from = estadistico,
+    values_from = p_ppc
+  ) |>
+  mutate(
+    interpretacion_global = case_when(
+      `Variación CLR` < 0.1 ~ "Subestima la variación global",
+      `Variación CLR` > 0.9 ~ "Sobreestima la variación global",
+      TRUE ~ "Variación global compatible"
+    )
+  )
+```
+
+```{r}
+#| label: tbl-ppc-global-12-modelos
+#| tbl-cap: "Verificaciones predictivas posteriores globales para las doce formulaciones comparadas."
+
+ppc_global_12 |>
+  mutate(
+    `p PPC centroide` = round(Centroide, 3),
+    `p PPC variación CLR` = round(`Variación CLR`, 3)
+  ) |>
+  select(
+    Familia = familia,
+    Modelo = modelo,
+    `p PPC centroide`,
+    `p PPC variación CLR`,
+    `Interpretación` = interpretacion_global
+  ) |>
+  kbl(
+    align = c("l", "l", "c", "c", "l"),
+    escape = FALSE,
+    linesep = ""
+  ) |>
+  kable_styling(
+    latex_options = c("hold_position", "repeat_header"),
+    full_width = FALSE,
+    font_size = 8
+  ) |>
+  column_spec(5, width = "4cm") # Ajusta el texto de interpretación para que no desborde el A4
+```
+
+La @tbl-ppc-global-12-modelos muestra, en primer lugar, que las doce especificaciones reproducen de forma adecuada la localización global de los datos. Los valores $p$ predictivos para el centroide de Aitchison se mantienen en todos los casos dentro del rango de compatibilidad o muy próximos a sus límites, lo que indica que ninguna de las familias estudiadas presenta dificultades severas para capturar el centro composicional de la nube real.
+
+Las diferencias entre familias emergen con claridad al examinar la variación total en coordenadas CLR. En los modelos de regresión de Dirichlet clásicos, los valores $p$ para este indicador se sitúan de forma sistemática en la zona alta ($p > 0.99$), revelando una marcada tendencia a sobreestimar la dispersión global. Este patrón de sobreestimación se intensifica en los modelos Dirichlet con distribución a priori epistática, donde los valores $p$ de la variación CLR son extremadamente cercanos a 1, reflejando un exceso aún más acusado en la estimación de la variabilidad total.
+
+En cambio, los modelos logístico-normales con estructura epistática muestran un comportamiento notablemente más equilibrado. En sus variantes base (con y sin efecto por día), los valores $p$ de variación CLR se sitúan en la zona baja del intervalo, pero permanecen en rangos estadísticamente compatibles. No obstante, la inclusión de una componente de varianza residual no estructurada común ($\delta$ común) mejora sustancialmente el ajuste, desplazando los valores $p$ hacia el centro de la zona de compatibilidad (alrededor de 0.34), especialmente en la formulación que combina dicha varianza común con el efecto aleatorio por día.
+
+En consecuencia, los resultados de las validaciones predictivas a posteriori (PPC) confirman que, si bien todas las familias capturan adecuadamente la posición media de las composiciones, difieren notablemente en su capacidad para modelar la dispersión. Mientras que las formulaciones de Dirichlet generan réplicas con un exceso de variabilidad en el espacio CLR debido a la rigidez inherente a su estructura de varianza, los modelos logístico-normales con varianza residual no estructurada común ofrecen el ajuste más preciso. En estos últimos, la combinación de una matriz de covarianza estructurada mediante el campo epistático junto con un residuo no estructurado aporta la flexibilidad necesaria para reproducir fielmente la dispersión global de los datos.
+
+```{r}
+#| label: fig-ppc-global-12-modelos
+#| fig-cap: "Verificaciones predictivas posteriores globales para centroide de Aitchison y variación total CLR en los doce modelos. Las líneas horizontales de puntos señalan el intervalo de compatibilidad [0.1, 0.9] de los p-valores PPC."
+#| echo: false
+#| out-width: "100%"
+
+library(ggplot2)
+
+ppc_long_global <- ppc_global_12 |>
+  select(familia, modelo, Centroide, `Variación CLR`) |>
+  pivot_longer(
+    cols = c(Centroide, `Variación CLR`),
+    names_to = "estadistico",
+    values_to = "p_ppc"
+  ) |>
+  mutate(
+    estadistico = factor(
+      estadistico,
+      levels = c("Centroide", "Variación CLR")
+    ),
+    familia = factor(
+      familia,
+      levels = c("Dirichlet clásico",
+                 "Dirichlet epistático",
+                 "Log-normal epistático")
+    ),
+    modelo = factor(
+      modelo,
+      levels = c("phi común", "phi por condición",
+                 "phi común + día", "phi por condición + día",
+                 "kappa común", "kappa por condición",
+                 "kappa común + día", "kappa por condición + día",
+                 "base", "base + día",
+                 "delta común", "delta común + día")
+    )
+  )
+
+ggplot(ppc_long_global,
+       aes(x = modelo, y = p_ppc, colour = familia, shape = estadistico)) +
+  geom_hline(yintercept = c(0.1, 0.9),
+             linetype = 2, colour = "grey60") +
+  geom_point(size = 2.5, position = position_dodge(width = 0.4)) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(
+    x = "Modelo",
+    y = "p-valor PPC",
+    colour = "Familia",
+    shape  = "Estadístico"
+  ) +
+  coord_cartesian(ylim = c(0, 1)) +
+  theme_bw() +
+  theme(
+    axis.text.x = element_text(angle = 60, hjust = 1, size = 8),
+    legend.position = "bottom"
+  )
+```
+
+La @fig-ppc-global-12-modelos ilustra el patrón resumido en la @tbl-ppc-global-12-modelos: los valores $p$ predictivos del centroide se agrupan en torno a valores intermedios en todas las familias, mientras que los correspondientes a la variación CLR se sitúan sistemáticamente en la zona extrema alta para los modelos Dirichlet (clásicos y epistáticos). En cambio, para los modelos logístico-normales, estos últimos valores se mantienen dentro del rango compatible; se sitúan en la zona baja en las variantes base y se desplazan hacia una posición más central y equilibrada únicamente al introducir el parámetro de precisión residual común ($\delta$ común). Las líneas horizontales de puntos marcan el intervalo \[0.1,0.9\] adoptado como rango de compatibilidad; de este modo, los puntos que caen por fuera de estos límites reflejan de manera clara un defecto o un exceso en la estimación de la estructura global.
+
+## Capacidad de reproducir la estructura local de los balances
+
+### Definición de los balances y PPC considerados
+
+En lugar de evaluar las comprobaciones predictivas a posteriori para cada una de las veinte proteoformas de forma individual —lo que generaría un análisis excesivamente extenso y de difícil interpretación—, este apartado se centra en balances log-ratio de interés biológico directo, en línea con las recomendaciones habituales para datos composicionales de alta dimensión [@aitchison1986; @egozcue2005; @greenacre2021]. En particular, se analizan tres balances:
+
+- **S10ph vs. No-S10ph:** resume el contraste entre las formas fosforiladas y no fosforiladas en la serina 10, un eje funcionalmente relevante en la regulación de la cromatina.
+- **Mod vs. Unmod:** compara las proteoformas modificadas frente a las no modificadas.
+- **Ac vs. No-Ac:** recoge la diferencia entre las formas acetiladas y no acetiladas.
+
+Estos tres balances fueron elegidos porque sintetizan de manera clara los principales ejes biológicos de variabilidad del sistema en un número reducido de elementos comprensibles, siguiendo la idea de representar grupos de partes mediante balances ortonormales [@egozcue2006; @egozcue2005]. En lugar de enfocarse únicamente en la media composicional global, estos balances permiten verificar si los modelos representan correctamente tanto la dirección del cambio entre los grupos de proteoformas como la magnitud de su variabilidad.
+
+Se llevaron a cabo comprobaciones predictivas a posteriori (*posterior predictive checks*, PPC) para cada modelo, centrándose en dos estadísticos por balance: **media** y **varianza**. La media del balance se utiliza para determinar si el modelo refleja adecuadamente el desplazamiento promedio entre los dos grupos comparados, mientras que la varianza indica si las réplicas generadas a partir de la distribución predictiva a posteriori representan fielmente la dispersión real observada entre las muestras [@vehtari2012; @gelman]. La compatibilidad entre los modelos y los datos se evalúa bajo el mismo criterio de valores $p$ predictivos adoptado en el análisis global, donde el intervalo $[0.1,\,0.9]$ indica un ajuste adecuado [@gelman2013].
+
+Sobre esta base, en el siguiente apartado se comparan los doce modelos a partir de los valores $p$ predictivos para las medias y varianzas de los tres balances, con el fin de identificar qué formulaciones describen mejor la localización (media) y la dispersión (varianza) de cada uno de ellos. Este enfoque permite evaluar de forma conjunta el ajuste global de cada modelo y su capacidad para reproducir los patrones biológicos clave.
+
+### Resultados de PPC para medias y varianzas de balances
+
+Para evaluar la capacidad de las doce formulaciones para reproducir la estructura local de los datos, se construyó una tabla conjunta con los valores $p$ predictivos para las medias y las varianzas de los tres balances (S10ph vs. No-S10ph, Mod vs. Unmod y Ac vs. No-Ac). Esta integración permite contrastar directamente el comportamiento de todas las familias a partir de sus respectivas comprobaciones predictivas a posteriori.
+
+```{r}
+#| label: carga-balances-tres-familias
+#| message: false
+#| warning: false
+#| include: false
+
+library(readr)
+library(dplyr)
+library(tidyr)
+library(knitr)
+library(kableExtra)
+library(here)
+
+# -----------------------------
+# 1) Dirichlet clásico
+# -----------------------------
+resumen_ppc_dirich <- read_csv(
+  here(datos_dir, "PPC", "resumen_ppc_todos_modelos_completo.csv"),
+  show_col_types = FALSE
+)
+
+tabla_dirich <- resumen_ppc_dirich |>
+  filter(
+    bloque_ppc == "balances",
+    estadistico %in% c("media_balance", "varianza_balance")
+  ) |>
+  mutate(
+    familia = "Dirichlet clásico",
+    modelo = recode(
+      modelo,
+      "phi_comun"     = "phi común",
+      "phi_cond"      = "phi por condición",
+      "phi_comun_dia" = "phi común + día",
+      "phi_cond_dia"  = "phi por condición + día"
+    ),
+    balance = componente,
+    tipo = ifelse(estadistico == "media_balance", "p_media", "p_varianza")
+  ) |>
+  select(familia, modelo, balance, tipo, p_ppc) |>
+  pivot_wider(
+    names_from = tipo,
+    values_from = p_ppc
+  )
+
+# -----------------------------
+# 2) Dirichlet epistático
+# -----------------------------
+resumen_ppc_epi <- read_csv(
+  here(datos_dir, "PPC_Epistasia", "resumen_ppc_epistasia_todos_modelos.csv"),
+  show_col_types = FALSE
+)
+
+tabla_epi <- resumen_ppc_epi |>
+  filter(
+    bloque_ppc == "balances",
+    estadistico %in% c("media_balance", "varianza_balance")
+  ) |>
+  mutate(
+    familia = "Dirichlet epistático",
+    modelo = recode(
+      modelo,
+      "kappa_comun"     = "kappa común",
+      "kappa_cond"      = "kappa por condición",
+      "kappa_comun_dia" = "kappa común + día",
+      "kappa_cond_dia"  = "kappa por condición + día"
+    ),
+    balance = componente,
+    tipo = ifelse(estadistico == "media_balance", "p_media", "p_varianza")
+  ) |>
+  select(familia, modelo, balance, tipo, p_ppc) |>
+  pivot_wider(
+    names_from = tipo,
+    values_from = p_ppc
+  )
+
+# -----------------------------
+# 3) Log-normal epistático
+# -----------------------------
+resumen_ppc_ln <- read_csv(
+  here(datos_dir, "PPC_Lognormal_Sum0_Revisados", "resumen_ppc_lognormal_sum0_modelos_revisados.csv"),
+  show_col_types = FALSE
+)
+
+tabla_ln <- resumen_ppc_ln |>
+  filter(
+    bloque_ppc == "balances",
+    estadistico %in% c("media_balance", "varianza_balance")
+  ) |>
+  mutate(
+    familia = "Log-normal epistático",
+    modelo = recode(
+      modelo,
+      "lognor_v1_sum0coef_revisado"                 = "base",
+      "lognor_v1_dia_sum0coef_revisado"             = "base + día",
+      "lognor_v1_sum0coef_delta_comun_revisado"     = "delta común",
+      "lognor_v1_dia_sum0coef_delta_comun_revisado" = "delta común + día"
+    ),
+    balance = componente,
+    tipo = ifelse(estadistico == "media_balance", "p_media", "p_varianza")
+  ) |>
+  select(familia, modelo, balance, tipo, p_ppc) |>
+  pivot_wider(
+    names_from = tipo,
+    values_from = p_ppc
+  )
+
+# -----------------------------
+# 4) Tabla conjunta
+# -----------------------------
+tabla_balances_global <- bind_rows(
+  tabla_dirich,
+  tabla_epi,
+  tabla_ln
+) |>
+  mutate(
+    familia = factor(
+      familia,
+      levels = c("Dirichlet clásico", "Dirichlet epistático", "Log-normal epistático")
+    ),
+    balance = factor(
+      balance,
+      levels = c("S10ph vs No-S10ph", "Mod vs Unmod", "Ac vs No-Ac")
+    )
+  ) |>
+  arrange(familia, modelo, balance) |>
+  mutate(
+    p_media    = sprintf("%.3f", p_media),
+    p_varianza = sprintf("%.3f", p_varianza)
+  )
+```
+
+```{r}
+#| label: tbl-balances-global
+#| tbl-cap: "P-valores de verificación predictiva posterior para medias y varianzas de los balances log-ratio en las doce formulaciones comparadas."
+#| results: asis
+
+tabla_balances_global |>
+  kbl(
+    col.names = c("Familia", "Modelo", "Balance", "p PPC media", "p PPC varianza"),
+    align = c("l", "l", "l", "c", "c"),
+    escape = FALSE,
+    booktabs = TRUE,
+    longtable = FALSE,
+    linesep = ""
+  ) |>
+  kable_styling(
+    latex_options = c("hold_position"),
+    full_width = FALSE,
+    font_size = 10
+  )
+```
+
+A la vista de la @tbl-balances-global, todas las familias modelizan correctamente la localización (media) de los balances composicionales; los valores $p$ de las validaciones predictivas a posteriori (PPC) para la **media** se concentran en la zona central de compatibilidad (0.30 a 0.65). La única excepción relevante es la especificación Dirichlet epistática con *kappa común + día*, donde la media del contraste *Mod vs. Unmod* presenta un sesgo por defecto y cae fuera del límite admitido ($0.083$), un desajuste que se corrige al flexibilizar el parámetro *por condición* ($0.180$).
+
+Las diferencias de ajuste entre las familias son evidentes al evaluar la dispersión (**varianza**) de estos balances locales:
+
+- **Regresión de Dirichlet clásica:** Muestra problemas de calibración contrapuestos según el eje. El balance de fosforilación (*S10ph vs. No-S10ph*) está bien ajustado ($p \approx 0.50$). Sin embargo, el eje *Mod vs. Unmod* infravalora la dispersión de forma clara si se omite la estructura temporal ($p < 0.20$), mientras que el de acetilación (*Ac vs. No-Ac*) tiende a sobreestimarla sistemáticamente ($p > 0.76$). Introducir el efecto aleatorio por día es indispensable aquí para recentrar el balance de las modificaciones.
+- **Regresión de Dirichlet epistática:** Muestra el comportamiento más robusto en el espacio local. Ninguno de sus indicadores de varianza escapa del intervalo $[0.1,\,0.9]$. El eje de la fosforilación se estabiliza de forma óptima ($p \approx 0.50$ a $0.60$), y los otros dos balances se mantienen en la franja alta, pero dentro de los márgenes de compatibilidad.
+- **Familia logístico-normal epistática:** Captura con precisión las varianzas de *Mod vs. Unmod* y *Ac vs. No-Ac* ($p \approx 0.31$ a $0.53$). Sin embargo, el modelo se muestra muy rígido en el eje S10ph vs. No-S10ph, con valores $p$ estancados en la zona baja (entre 0.15 y 0.22). Esto refleja una infravaloración constante de la dispersión en la fosforilación, que apenas se corrige al añadir la precisión residual común ($\delta$ común) o el efecto por día.
+
+En resumen, para estimar las medias, cualquier estructura es válida. Sin embargo, en la varianza local, las restricciones de cada familia condicionan el ajuste. La aproximación logístico-normal subestima la variabilidad en el eje de la Serina 10, y la Dirichlet clásica se descalibra si prescinde del factor temporal. En este escenario, **los modelos Dirichlet epistáticos ofrecen el ajuste más equilibrado**, al ser los únicos capaces de mantener simultáneamente todos los indicadores de varianza local dentro de los límites de compatibilidad estadística establecidos.
+
+## Capacidad predictiva fuera de la muestra {#sec-capacidad-predictiva-fuera-muestra}
+
+La capacidad predictiva fuera de la muestra se evaluó mediante LOO-IC y WAIC. Los resultados se expresan como diferencias en la densidad predictiva esperada ($\Delta\text{ELPD}$) respecto al mejor modelo, junto con sus errores estándar, para cuantificar la relevancia estadística de dichas diferencias [@vehtari2017; @vehtari2012].
+
+Este enfoque permite identificar directamente qué configuración ofrece el mejor equilibrio entre ajuste y complejidad, sin necesidad de duplicar el análisis por familias y manteniendo una escala común para todos los modelos considerados [@gelman]. Además, la presentación en términos de $\Delta\text{ELPD}$ y su error estándar facilita evaluar cuándo las diferencias observadas en capacidad predictiva son sustanciales o, por el contrario, se encuentran dentro de la variabilidad esperable por simulación Monte Carlo [@gabry2019].
+
+```{r}
+#| label: carga-loo-waic-global
+#| message: false
+#| warning: false
+#| include: false
+
+library(dplyr)
+library(readr)
+library(knitr)
+library(kableExtra)
+library(here)
+
+tab_global <- readr::read_csv(
+  here::here(datos_dir, "loo_waic_12_modelos_revisados_comparacion.csv"),
+  show_col_types = FALSE
+)
+
+tab_global <- tab_global |>
+  mutate(
+    Modelo = dplyr::recode(
+      modelo,
+      # Dirichlet clásico
+      "fit_dirich_phi_comun"       = "Dirichlet cl.: phi común",
+      "fit_dirich_phi_cond"        = "Dirichlet cl.: phi cond.",
+      "fit_dirich_phi_comun_dia"   = "Dirichlet cl.: phi común + día",
+      "fit_dirich_phi_cond_dia"    = "Dirichlet cl.: phi cond. + día",
+      # Dirichlet epistático
+      "fit_kappa_comun"            = "Dirichlet epi.: kappa común",
+      "fit_kappa_cond"             = "Dirichlet epi.: kappa cond.",
+      "fit_kappa_comun_dia"        = "Dirichlet epi.: kappa común + día",
+      "fit_kappa_cond_dia"         = "Dirichlet epi.: kappa cond. + día",
+      # Log-normal epistático revisado
+      "fit_lognor_v1_sum0coef_revisado"                 = "Log-normal epi.: base",
+      "fit_lognor_v1_dia_sum0coef_revisado"             = "Log-normal epi.: base + día",
+      "fit_lognor_v1_sum0coef_delta_comun_revisado"     = "Log-normal epi.: delta común",
+      "fit_lognor_v1_dia_sum0coef_delta_comun_revisado" = "Log-normal epi.: delta común + día"
+    )
+  )
+
+tabla_global_pred <- tab_global |>
+  select(
+    criterio,
+    Modelo,
+    elpd_diff,
+    se_diff
+  ) |>
+  mutate(
+    Desempeno = case_when(
+      elpd_diff == 0 ~ "Mejor modelo (referencia)",
+      elpd_diff > -20 ~ "Pérdida predictiva ligera",
+      elpd_diff > -50 ~ "Pérdida predictiva moderada",
+      TRUE ~ "Pérdida predictiva clara"
+    )
+  )
+```
+
+```{r}
+#| label: tbl-loo-waic-global
+#| tbl-cap: "Comparación global de la capacidad predictiva fuera de la muestra para las doce formulaciones consideradas."
+#| results: asis
+
+tabla_global_pred |>
+  knitr::kable(
+    digits = 2,
+    align = c("l", "l", "c", "c", "l"),
+    col.names = c("Criterio", "Modelo", "Δ elpd", "EE(Δ elpd)", "Interpretación"),
+    escape = FALSE,
+    booktabs = TRUE,
+    longtable = TRUE
+  ) |>
+  kable_styling(
+    latex_options = c("repeat_header"),
+    full_width = FALSE,
+    font_size = 10
+  )
+```
+
+La @tbl-loo-waic-global muestra que el modelo con mejor capacidad predictiva es el **Dirichlet epistático con** $\kappa$ común y efecto aleatorio por día, que se toma como referencia ($\Delta\text{ELPD} = 0$) tanto en LOO-IC como en WAIC. Muy cerca se sitúan el **Dirichlet clásico con** $\phi$ común y efecto por día y el **Dirichlet epistático con** $\kappa$ por condición y efecto por día; sus pérdidas de ELPD son ligeras y compatibles con un rendimiento predictivo próximo al del modelo de referencia.
+
+En cambio, las variantes sin efecto por día —así como las logístico-normales con $\delta$ común— presentan pérdidas de ELPD del orden de 80 a 100 unidades o superiores. Al ser estas diferencias marcadamente mayores que sus errores estándar, se confirma un empeoramiento notable en su capacidad de generalización. Este patrón se repite en las familias estudiadas y demuestra que incluir el efecto aleatorio por día es una decisión metodológica decisiva. Por último, los modelos logístico-normales quedan sistemáticamente por detrás de las mejores opciones basadas en la distribución de Dirichlet, por lo que no aparecen como alternativas prioritarias desde el punto de vista predictivo.
+
+## Separación entre condiciones experimentales
+
+### Divergencia KL simétrica
+
+Como criterio adicional para comparar los modelos, se midió la separación entre los perfiles composicionales de las condiciones asíncrona y mitosis mediante la divergencia de Kullback–Leibler (KL) simétrica, definida como la suma de las divergencias KL en ambas direcciones entre las distribuciones predictivas [@kullback1951; @nawa2024]. Esta métrica resume en un solo valor cuánto difieren las distribuciones predictivas de ambas condiciones, teniendo en cuenta tanto las diferencias en su promedio como en su dispersión.
+
+A diferencia de las comprobaciones predictivas (PPC) y de los criterios LOO-IC y WAIC, que se centran en evaluar el ajuste y la capacidad predictiva de los modelos, la divergencia KL simétrica proporciona información sobre la magnitud de la separación real que cada modelo establece entre las condiciones [@vehtari2012; @vehtari2017]. Los valores más elevados indican que los perfiles composicionales presentan una mayor divergencia entre sí, mientras que los valores bajos reflejan diferencias más moderadas, ofreciendo así una medida cuantitativa complementaria para valorar la capacidad de los modelos para discriminar entre estados celulares [@andriamanalimanana2019; @yao2025].
+
+### Comparación global de la divergencia KL simétrica
+
+```{r}
+#| label: carga-kl-global
+#| message: false
+#| warning: false
+#| include: false
+
+library(dplyr)
+library(readr)
+library(knitr)
+library(kableExtra)
+library(here)
+
+# -----------------------------
+# 1) Dirichlet clásico
+# -----------------------------
+kl_dirich <- read.csv(
+  here(datos_dir, "resultados_kl_dirichlet", "resumen_kl_simetrica_dirichlet.csv"),
+  stringsAsFactors = FALSE
+) |>
+  mutate(
+    familia = "Dirichlet clásico",
+    Modelo = dplyr::recode(
+      modelo,
+      "phi_comun"     = "Dirichlet cl.: phi común",
+      "phi_cond"      = "Dirichlet cl.: phi cond.",
+      "phi_comun_dia" = "Dirichlet cl.: phi común + día",
+      "phi_cond_dia"  = "Dirichlet cl.: phi cond. + día"
+    )
+  )
+
+# -----------------------------
+# 2) Dirichlet epistático
+# -----------------------------
+kl_epi <- read.csv(
+  here(datos_dir, "resultados_kl_epistasia", "resumen_kl_simetrica_epistasia.csv"),
+  stringsAsFactors = FALSE
+) |>
+  mutate(
+    familia = "Dirichlet epistático",
+    Modelo = dplyr::recode(
+      modelo,
+      "kappa_comun"     = "Dirichlet epi.: kappa común",
+      "kappa_cond"      = "Dirichlet epi.: kappa cond.",
+      "kappa_comun_dia" = "Dirichlet epi.: kappa común + día",
+      "kappa_cond_dia"  = "Dirichlet epi.: kappa cond. + día"
+    )
+  )
+
+# -----------------------------
+# 3) Log-normal epistático
+# -----------------------------
+kl_ln <- read.csv(
+  here(datos_dir, "resultados_kl_lognormal_sum0_revisados", "resumen_kl_mvn_simetrica_lognormal_sum0_revisados.csv"),
+  stringsAsFactors = FALSE
+) |>
+  mutate(
+    familia = "Log-normal epistático",
+    Modelo = dplyr::recode(
+      modelo,
+      "lognor_v1_sum0coef_revisado"                 = "Log-normal epi.: base",
+      "lognor_v1_dia_sum0coef_revisado"             = "Log-normal epi.: base + día",
+      "lognor_v1_sum0coef_delta_comun_revisado"     = "Log-normal epi.: delta común",
+      "lognor_v1_dia_sum0coef_delta_comun_revisado" = "Log-normal epi.: delta común + día"
+    )
+  )
+
+# -----------------------------
+# 4) Tabla conjunta
+# -----------------------------
+tabla_kl_global <- bind_rows(kl_dirich, kl_epi, kl_ln) |>
+  select(
+    familia,
+    Modelo,
+    mean,
+    sd,
+    median,
+    q025,
+    q975
+  ) |>
+  arrange(
+    factor(
+      familia,
+      levels = c("Dirichlet clásico", "Dirichlet epistático", "Log-normal epistático")
+    ),
+    mean
+  ) |>
+  mutate(
+    `Media KL`   = round(mean, 1),
+    `DT KL`      = round(sd, 1),
+    `Mediana KL` = round(median, 1),
+    `KL 2.5 %`   = round(q025, 1),
+    `KL 97.5 %`  = round(q975, 1)
+  ) |>
+  select(
+    Familia = familia,
+    Modelo,
+    `Media KL`,
+    `DT KL`,
+    `Mediana KL`,
+    `KL 2.5 %`,
+    `KL 97.5 %`
+  )
+```
+
+```{r}
+#| label: tbl-kl-global
+#| tbl-cap: "Resumen de las divergencias KL simétricas entre asíncrono y mitosis para las doce formulaciones comparadas."
+#| results: asis
+
+tabla_kl_global |>
+  knitr::kable(
+    digits = 1,
+    align = c("l", "l", "c", "c", "c", "c", "c"),
+    escape = FALSE,
+    booktabs = TRUE,
+    longtable = TRUE
+  ) |>
+  kable_styling(
+    latex_options = c("repeat_header"),
+    full_width = FALSE,
+    font_size = 8
+  )
+```
+
+La @tbl-kl-global muestra que los doce modelos detectan una separación clara entre las composiciones de las muestras asíncronas y en mitosis. Sin embargo, el hallazgo fundamental es que **la inclusión del efecto aleatorio por día incrementa sistemáticamente la divergencia KL en todos los casos**, independientemente de la familia o especificación utilizada.
+
+No obstante, la magnitud de este incremento está depende de la arquitectura matemática de cada familia, ya que los espacios donde se calcula la divergencia (la distribución de Dirichlet en el símplex original frente a la normal multivariante en coordenadas ILR) no tienen la misma escala. De este modo:
+
+- **En las familias de Dirichlet:** La modelización de la variabilidad inter-día cambia de forma importante la magnitud de las diferencias. Las divergencias medias pasan de valores en torno a 100 (separación moderada) a valores superiores a 1000 (separación notable), multiplicando la distancia promedio por más de quince. Dentro de este grupo, las variantes epistáticas con efecto por día alcanzan los valores medios más elevados (entre 1520 y 1547).
+
+- **En la familia logístico-normal:** El efecto se mide sobre las coordenadas ILR y se manifiesta diferencias menos importantes, pero con la misma tendencia al alza. El modelo base duplica su divergencia media al añadir la componente temporal, desplazando su intervalo de credibilidad desde $[46.7,\,282.1]$ hasta $[73.6,\,500.6]$.
+
+Este patrón transversal confirma que la sensibilidad a la variabilidad técnica inter-día es un fenómeno común en el conjunto de datos, aunque la escala numérica final de la divergencia KL quede determinada por el espacio matemático donde opera cada familia. Por tanto, las magnitudes solo resultan comparables entre variantes de un mismo grupo.
+
+## Selección final del modelo
+
+Como las doce formulaciones presentan una convergencia MCMC óptima, la selección final no depende de factores computacionales, sino del ajuste y la interpretación de cada modelo. En consecuencia, la decisión se basa en evaluar conjuntamente tres criterios: la capacidad para reproducir la estructura global y local de los datos, el rendimiento predictivo fuera de la muestra y la separación estimada entre los estados asíncrono y mitótico.
+
+En las validaciones predictivas a posteriori (PPC), los modelos Dirichlet (tanto el clásico como el epistático) reproducen bien la distribución global de los datos y los balances biológicos. Añadir el efecto aleatorio por día es clave: mejora la estimación de la variabilidad y corrige los fallos de los modelos que no lo incluyen. En cambio, la familia logístico-normal falla sistemáticamente al estimar la dispersión del balance *S10ph vs. No-S10ph*, lo que limita su utilidad para analizar este eje de fosforilación.
+
+Al comparar la capacidad predictiva con LOO-IC y WAIC, el modelo Dirichlet epistático con $\kappa$ común y efecto por día es claramente el mejor ($\Delta\text{ELPD} = 0$). El Dirichlet clásico con efecto por día y el epistático con $\kappa$ por condición rinden bien, pero quedan por debajo. Por último, las versiones sin efecto por día y todos los modelos logístico-normales ofrecen una capacidad predictiva muy inferior, lo que confirma que generalizan peor fuera de la muestra.
+
+Los resultados de la divergencia KL simétrica aportan el último criterio de decisión. Todos los modelos detectan una separación clara entre asíncrono y mitosis. Sin embargo, en las familias Dirichlet la inclusión del efecto por día cambia por completo la inferencia, elevando las distancias medias por encima de 1500 con intervalos de credibilidad muy altos. En la familia logístico-normal, en cambio, las divergencias se mantienen en valores numéricos bajos (entre 37 y 89) y sus intervalos se solapan de forma clara entre los modelos con y sin día, lo que recuerda que sus escalas no son comparables con las de Dirichlet por calcularse sobre el espacio ILR.
+
+A la vista de estos resultados, se selecciona como modelo de referencia para la interpretación biológica el **Dirichlet epistático con** $\kappa$ común y efecto aleatorio por día. Esta elección se justifica porque combina una estimación estable, un comportamiento adecuado en los PPC y balances, la mayor capacidad predictiva fuera de la muestra y la separación más clara entre las dos condiciones experimentales. Por tanto, este modelo será la base para analizar las diferencias biológicas y calcular las probabilidades a posteriori de las proteoformas individuales.
+
+Como alternativa secundaria se establece el **Dirichlet clásico con** $\phi$ común y efecto aleatorio por día. Esta opción ofrece un comportamiento global cercano al modelo seleccionado bajo una formulación más sencilla. Aunque su rendimiento predictivo y su separación KL son ligeramente menores, constituye una alternativa robusta para el análisis de sensibilidad, lo que permite confirmar que las conclusiones biológicas principales no dependen únicamente de la distribución a priori epistática.

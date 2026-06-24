@@ -1,0 +1,19 @@
+{
+  "hash": "a6e8b7857d44c1939024f163e81d9a13",
+  "result": {
+    "engine": "knitr",
+    "markdown": "\n\n# Agradecimientos {.unnumbered}\n\nEn primer lugar, quiero mostrar mi sincero agradecimiento a los profesores del máster, que han sabido transmitir sus amplios conocimientos de manera didáctica y me han hecho comprender conceptos, para mí complicados, que he intentado plasmar en este trabajo. En segundo lugar, al equipo de la profesora Effie Apostolou (Weill Cornell Medicine, Nueva York) por la cesión desinteresada de los datos. En tercer lugar, quiero agradecer el estímulo y la paciencia de mis tutores, Marta Hidalgo, Alejandra Laguillo y Carlos Martí, sin cuyos sabios consejos no hubiese sido posible finalizar esta tarea. Y, finalmente, a mi esposa, Estrella, por su paciencia, comprensión y constante apoyo en los momentos en los que mis ánimos han flaqueado.\n\n# Resumen {.unnumbered}\n\nEste trabajo establece un marco bayesiano para analizar datos composicionales de 20 proteoformas del fragmento 9–17 de la histona H3, cuantificadas mediante LC-MS/MS en células madre embrionarias humanas en estado asíncrono y en mitosis. El objetivo es determinar cómo se reorganizan sus proporciones relativas, específicamente la interacción de las acetilaciones con la metilación en K9 y la fosforilación en S10 durante la división celular.\n\nDesde una óptica metodológica, se combinan análisis exploratorios en el símplex, transformaciones de razones logarítmicas e inferencia bayesiana mediante regresión de Dirichlet con campo epistático y modelos lognormales estructurados. Estos métodos incorporan la geometría composicional, la correlación entre proteoformas y y la estructura de interacciones mutuas (epistasia) que estabiliza cada estado. Los resultados muestran una acumulación selectiva de la fosforilación en S10, una desacetilación condicionada al estado fosforilado y una reducción general de la epistasia en la mitosis, lo que simplifica el sistema hacia un comportamiento predominantemente aditivo.\n\n# Abstract {.unnumbered}\n\nThis study establishes a Bayesian framework to analyze compositional data from 20 proteoforms of the histone H3 9–17 fragment, quantified by LC-MS/MS in human embryonic stem cells during both asynchronous growth and mitosis. The aim is to determine how their relative proportions are reorganized—specifically, the interplay of acetylations with K9 methylation and S10 phosphorylation during cell division.\n\nFrom a methodological standpoint, this study combines exploratory simplex analysis, log-ratio transformations, and Bayesian inference using Dirichlet regression with an epistatic field alongside structured log-normal models. These methods account for the compositional geometry, the correlation between proteoforms, and the network of mutual interactions (epistasis) that stabilizes each state. The findings reveal a selective accumulation of S10 phosphorylation, deacetylation conditional on the phosphorylated state, and an overall reduction in epistasis during mitosis, which simplifies the system toward predominantly additive behavior.\n\n\n",
+    "supporting": [],
+    "filters": [
+      "rmarkdown/pagebreak.lua"
+    ],
+    "includes": {},
+    "engineDependencies": {
+      "knitr": [
+        "{\"type\":\"list\",\"attributes\":{},\"value\":[]}"
+      ]
+    },
+    "preserve": null,
+    "postProcess": false
+  }
+}

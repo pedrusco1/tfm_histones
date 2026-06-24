@@ -1,0 +1,511 @@
+---
+title: "Análisis de la Epistasia Molecular mediante Descomposición Ortogonal de la Varianza"
+subtitle: "Resumen"
+author: "Pedro Martí"
+format: pdf
+execute: 
+  echo: false
+  message: false
+  warning: false
+  fig-align: "center"
+lang: es-ES
+csl: ../../Informes/elsevier-harvard.csl
+bibliography: ../../Informes/references.bib
+---
+
+## Caracterización de las interacciones y descomposición de la varianza
+
+Tras modelar las abundancias relativas, se cuantificó la estructura de las interacciones entre modificaciones mediante la descomposición ortogonal de la varianza [@álvarez-castro2012; @álvarez-castro2019]. La variable respuesta de este análisis son las energías posteriores obtenidas del modelo Dirichlet de campo epistático (con parámetro de dispersión común y efecto aleatorio por día) implementado en Stan. Bajo este marco, la varianza total del paisaje energético se divide en dos bloques:
+
+* **Componente principal:** Asocia la variabilidad a los efectos aditivos e independientes de cada posición (K9, S10 y K14).
+* **Componente epistática:** Recoge el residuo no aditivo, es decir, las interacciones de orden superior entre dichas posiciones.
+
+Para ello, el diseño factorial completo —definido por las combinaciones de K9 (cinco niveles), S10 (dos niveles) y K14 (dos niveles)— se codificó en una matriz de diseño ortogonal. Esta ortogonalidad garantiza la estimación independiente de los efectos de cada posición sin riesgo de colinealidad.
+
+El algoritmo se aplicó de forma iterativa a cada simulación de la distribución posterior mediante tres pasos:
+
+1. **Proyección:** El vector de energías de cada proteoforma se proyectó sobre la matriz de diseño mediante mínimos cuadrados ordinarios.
+2. **Extracción:** Se separaron numéricamente los componentes aditivos del término residual epistático.
+3. **Complejidad:** Se calculó un índice sintético que resume la proporción de varianza no aditiva en el espacio de estados.
+
+Este índice permitió contrastar la hipótesis principal: determinar si la transición desde el estado asíncrono hacia el mitótico se traduce en una simplificación del sistema o, en términos estadísticos, en una linealización de la superficie de respuesta por la pérdida de peso de las interacciones.
+
+
+```{r}
+#| label: setup
+#| include: false
+
+library(tidyverse)
+library(here)
+library(ggplot2)
+library(ggrepel)
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+#| label: cargar-resultados-precalculados
+#| include: false
+
+library(here)
+library(tidyverse)
+
+# -------------------------------------------------------------------------
+# Carga de resultados precalculados: modelo epistático con efecto día
+# -------------------------------------------------------------------------
+# Este documento está pensado para copiarse/renderizarse desde:
+#
+#   DatosProcesados/epistasia_descomp_dia/
+#
+# En ese caso, el .rds está en la misma carpeta que el .qmd y el PDF se
+# generará también ahí. Para hacerlo más robusto, buscamos el archivo en:
+#   1) carpeta del .qmd,
+#   2) directorio de trabajo,
+#   3) DatosProcesados/epistasia_descomp_dia/ desde la raíz del proyecto.
+
+buscar_raiz_proyecto <- function() {
+  current_input <- knitr::current_input()
+
+  start_dirs <- c(getwd())
+
+  if (!is.null(current_input) && length(current_input) > 0 && !is.na(current_input)) {
+    start_dirs <- c(start_dirs, dirname(current_input))
+  }
+
+  start_dirs <- unique(normalizePath(start_dirs, mustWork = FALSE))
+
+  for (start_dir in start_dirs) {
+    dir_actual <- start_dir
+
+    repeat {
+      tiene_datos <- dir.exists(file.path(dir_actual, "DatosProcesados"))
+      tiene_scripts <- dir.exists(file.path(dir_actual, "ScriptsR"))
+
+      if (tiene_datos && tiene_scripts) {
+        return(dir_actual)
+      }
+
+      dir_padre <- dirname(dir_actual)
+
+      if (identical(dir_padre, dir_actual)) {
+        break
+      }
+
+      dir_actual <- dir_padre
+    }
+  }
+
+  NA_character_
+}
+
+nombre_rds_dia <- "77_resultados_epistasia_descomposicion_varianza_dia.rds"
+
+current_input <- knitr::current_input()
+dir_qmd <- if (!is.null(current_input) && length(current_input) > 0 && !is.na(current_input)) {
+  dirname(normalizePath(current_input, mustWork = FALSE))
+} else {
+  getwd()
+}
+
+raiz_proyecto <- buscar_raiz_proyecto()
+
+candidatos_resultados <- c(
+  file.path(dir_qmd, nombre_rds_dia),
+  file.path(getwd(), nombre_rds_dia)
+)
+
+if (!is.na(raiz_proyecto)) {
+  candidatos_resultados <- c(
+    candidatos_resultados,
+    file.path(
+      raiz_proyecto,
+      "DatosProcesados",
+      "epistasia_descomp_dia",
+      nombre_rds_dia
+    )
+  )
+}
+
+candidatos_resultados <- unique(normalizePath(candidatos_resultados, mustWork = FALSE))
+archivo_resultados <- candidatos_resultados[file.exists(candidatos_resultados)][1]
+
+if (is.na(archivo_resultados) || length(archivo_resultados) == 0) {
+  stop(
+    "No se encuentra el archivo de resultados precalculados del modelo con día.\n\n",
+    "Se ha buscado en:\n  ",
+    paste(candidatos_resultados, collapse = "\n  "),
+    "\n\nEjecuta antes:\n  source(here::here('ScriptsR', '77_precalcular_epistasia_descomposicion_varianza_dia.R'))\n",
+    "o copia este .qmd dentro de DatosProcesados/epistasia_descomp_dia/ junto al archivo .rds.",
+    call. = FALSE
+  )
+}
+
+res <- readRDS(archivo_resultados)
+
+# Volcar los objetos guardados en el entorno del documento para mantener
+# compatibilidad con los nombres usados en las tablas y figuras originales.
+list2env(res, envir = environment())
+
+# Alias usado por algunos chunks de epistasia local del documento original.
+df_resumen <- df_resumen_epistasia_local
+
+# Metadatos útiles para trazabilidad.
+archivo_resultados_usado <- archivo_resultados
+```
+
+
+## Descomposición aditiva y epistática de la varianza
+
+Tras estimar las variables respuesta del modelo para las 20 proteoformas, el siguiente paso consiste en analizar la estructura de sus interacciones. El propósito es evaluar si la transición desde el estado asíncrono hacia el mitótico simplifica el comportamiento del sistema o si, por el contrario, mantiene su complejidad.
+
+### Análisis global de la varianza: efectos principales e interacciones
+
+En primer lugar, se presentan los resultados cuantitativos del desglose de la varianza para el fragmento H3 (9–17). La @tbl-resumvar recoge la media y la desviación típica del porcentaje de variabilidad explicado por cada factor individual frente al bloque residual de las interacciones (la epistasia). Estos datos permiten comparar directamente el peso de cada componente y observar cómo se redistribuyen los porcentajes entre los estados asíncrono y mitótico.
+
+
+```{r}
+#| label: tbl-resumvar
+#| tbl-cap: "Análisis de efectos principales e interacciones: variabilidad explicada por componente en asincronía y mitosis."
+
+knitr::kable(resumen_varianza, 
+             digits = 2,
+             col.names = c("Componente", "Media (Asínc.)", "SD", "Media (Mitot.)", "SD"))
+
+```
+
+Los resultados del desglose global (@tbl-resumvar) reflejan que los efectos aditivos absorben la mayor parte de la varianza en ambas condiciones. No obstante, se aprecia un cambio drástico en la importancia de los factores principales entre estados:
+
+* **En el estado asíncrono:** El factor dominante es S10, que explica casi las dos terceras partes de la variabilidad total (64,91%), seguido por K9 con un 26%. El peso de K14 en esta condición es casi inapreciable (1,2%).
+* **En el estado mitótico:** El comportamiento se invierte. K9 pasa a dominar la dispersión al absorber el 92% de la varianza, mientras que la influencia de S10 disminuye hasta el 1,28%. Por su parte, K14 experimenta un ligero incremento y se sitúa en el 4%.
+* **Las interacciones (epistasia):** El componente no aditivo representa un porcentaje bajo en ambos estados. Además, durante la mitosis, el peso de estas interacciones se reduce a menos de la mitad, descendiendo del 7,6% hasta el 3,0%.
+
+En conclusión, estos datos indican que la entrada en mitosis no complejiza el sistema, sino que altera la importancia relativa de los factores individuales y reduce el peso de las interacciones mutuas.
+
+### Análisis del residuo no aditivo por proteoforma
+
+Una vez constatado que el componente epistático global representa una fracción pequeña de la variabilidad total, el siguiente paso consiste en analizar pormenorizadamente la distribución de este residuo no aditivo en cada una de las 20 proteoformas.
+
+
+```{r}
+#| label: fig-varianza-apilada
+#| fig-cap: "Descomposición relativa de la varianza por proteoforma y condición experimental. Cada barra representa la proporción de varianza atribuida a los componentes asociados a K9, S10, K14 y a la contribución epistática no aditiva."
+#| fig-height: 10
+#| fig-width: 11
+#| out-width: "100%"
+
+# Construir explícitamente los datos de la figura
+df_asinc <- analisis_por_estado[[1]] %>%
+  mutate(Condicion = "Asíncrona")
+
+df_mitot <- analisis_por_estado[[2]] %>%
+  mutate(Condicion = "Mitosis")
+
+df_grafico <- bind_rows(df_asinc, df_mitot) %>%
+  select(Estado, Condicion, V_K9, V_S10, V_K14, V_Epi) %>%
+  pivot_longer(
+    cols = starts_with("V_"),
+    names_to = "Componente",
+    values_to = "Valor"
+  ) %>%
+  group_by(Estado, Condicion) %>%
+  mutate(Proporcion = Valor / sum(Valor, na.rm = TRUE)) %>%
+  ungroup() %>%
+  mutate(
+    Componente = recode(
+      Componente,
+      V_K9 = "Locus K9",
+      V_S10 = "Locus S10",
+      V_K14 = "Locus K14",
+      V_Epi = "Epistasia"
+    )
+  )
+
+# Ordenar proteoformas por contribución epistática media
+orden_estados <- df_grafico %>%
+  filter(Componente == "Epistasia") %>%
+  group_by(Estado) %>%
+  summarise(prop_epi_media = mean(Proporcion, na.rm = TRUE), .groups = "drop") %>%
+  arrange(prop_epi_media) %>%
+  pull(Estado)
+
+df_grafico <- df_grafico %>%
+  mutate(
+    Estado = factor(Estado, levels = orden_estados),
+    Componente = factor(
+      Componente,
+      levels = c("Locus K9", "Locus S10", "Locus K14", "Epistasia")
+    )
+  )
+
+ggplot(df_grafico, aes(x = Estado, y = Proporcion, fill = Componente)) +
+  geom_col(width = 0.8) +
+  facet_wrap(~ Condicion, ncol = 2) +
+  coord_flip() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(
+    x = "Proteoforma",
+    y = "Proporción de la varianza",
+    fill = "Componente"
+  ) +
+  theme_minimal(base_size = 10) +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 8),
+    strip.text = element_text(face = "bold", size = 11),
+    axis.text.y = element_text(size = 7),
+    axis.text.x = element_text(size = 8),
+    plot.title = element_blank(),
+    plot.subtitle = element_blank()
+  )
+```
+
+La @fig-varianza-apilada muestra cómo se distribuye la varianza de cada proteoforma entre sus componentes aditivos (K9, S10 y K14) y su residuo no aditivo. Al estar normalizada por condición, la gráfica permite comparar directamente la estructura interna de la varianza de cada combinación, independientemente de su abundancia absoluta.
+
+El gráfico pone de manifiesto que la variabilidad no aditiva se distribuye de manera heterogénea y experimenta una transformación estructural profunda debido al tratamiento:
+
+* **Importancia del componente residual:** En el estado asíncrono, la interacción retiene un peso relativo considerable en casi todas las proteoformas, llegando a representar entre el 40% y el 73% de su varianza interna. Esto confirma que, al descender al nivel de combinaciones específicas, los residuos no aditivos son indispensables para describir el sistema.
+* **Efecto de la mitosis:** Al contrastar ambas condiciones, se constata una reorganización hacia la simplificación del modelo. Durante la mitosis se produce una contracción generalizada de la varianza epistática en la mayoría de las proteoformas, con descensos notables en combinaciones clave como las formas fosforiladas en S10. Simultáneamente, el peso aditivo se redistribuye: la importancia relativa de K9 aumenta, frente a una disminución generalizada de S10 y K14.
+
+Estos resultados corroboran que la transición a la mitosis no solo altera los efectos lineales de los residuos principales, sino que induce una atenuación y redistribución de la varianza no aditiva, reduciendo la influencia de las interacciones complejas.
+
+### Reorganización de la señal epistática durante la mitosis
+
+Para comprender no solo cuánta varianza absorben las interacciones, sino cómo cambia el signo y la naturaleza de estas desviaciones, es necesario analizar el comportamiento de la epistasia en cada proteoforma. La @tbl-delta-log2 detalla las probabilidades posteriores de que el residuo no aditivo sea positivo ($P(\text{Epi} > 0)$), ordenando las filas según la magnitud absoluta de su cambio ($\lvert\Delta P\rvert$) entre los estados asíncrono y mitótico. Este desglose permite clasificar el impacto del tratamiento en tres tendencias estadísticas bien diferenciadas: la evolución hacia la aditividad, la ganancia de sinergia o la estabilidad del residuo.
+
+
+```{r}
+#| label: tbl-delta-log2
+#| tbl-cap: "Reconfiguración de la señal epistática por proteoforma: probabilidades posteriores, cambio absoluto y cambio relativo entre mitosis y asincronía."
+
+tabla_delta_log2 <- df_delta %>%
+  dplyr::transmute(
+    Proteoforma = Marcas,
+    `P(Epi > 0) Asíncrona` = prop_gt_0_asinc,
+    `P(Epi > 0) Mitosis` = prob_gt_0_mitot,
+    `$\\Delta P$` = delta_prob,
+    `|$\\Delta P$|` = abs_delta,
+    `Log2 Ratio` = log2ratio,
+    Efecto = twofold
+  ) %>%
+  dplyr::arrange(dplyr::desc(abs(`$\\Delta P$`)))
+
+knitr::kable(
+  tabla_delta_log2,
+  digits = 3,
+  escape = FALSE
+)
+```
+
+El análisis de las probabilidades posteriores confirma que la mitosis induce una reconfiguración selectiva de los residuos no aditivos:
+
+* **Evolución hacia la aditividad (pérdida de interacción):** Varias de las proteoformas con mayor reorganización muestran un descenso notable en su probabilidad epistática. Destacan combinaciones como `K9me2S10phK14ac` y `K9me2S10ph`, cuyas probabilidades caen de forma drástica ($\Delta P$ de $-0,449$ y $-0,406$, respectivamente). Este repliegue indica que, durante la mitosis, estas proteoformas pasan a explicarse casi exclusivamente por la suma de sus efectos lineales.
+* **Ganancia de sinergia (refuerzo de la interacción):** En el extremo opuesto, `K9me3` protagoniza el cambio más drástico de la tabla, con un incremento de probabilidad de $0,554$ que la lleva a adquirir un claro comportamiento no aditivo durante la mitosis. Una tendencia similar, aunque más moderada, se observa en las formas acetiladas en la primera posición (`K9acS10ph` y `K9acS10phK14ac`), que ganan peso epistático en el estado mitótico.
+* **Componentes estables:** Un grupo significativo de proteoformas apenas experimenta variaciones en sus residuos ($\lvert\Delta P\rvert < 0,100$), manteniendo su perfil matemático inalterado entre condiciones, ya sea porque conservan una interacción constante (como `K9me1S10phK14ac`) o porque permanecen en el régimen lineal aditivo (como `K14ac`).
+
+En conjunto, estos datos demuestran que el tratamiento no ejerce un efecto uniforme, sino que redistribuye los residuos: diluye las interacciones complejas de las proteoformas con múltiples modificaciones y concentra la señal no aditiva en estados específicos, vinculados principalmente a K9.
+
+### Síntesis global de complejidad y aditividad del sistema
+
+Para evaluar el comportamiento conjunto del modelo, se calcularon tres métricas sintéticas a partir de los resultados individuales: el índice de complejidad local (que agrega la varianza no aditiva total), el peso epistático global y el grado de aditividad global. Estos tres parámetros expresan cuantitativamente el balance entre la estructura de interacción y el comportamiento lineal del modelo. Los resultados de esta síntesis se recogen en la @tbl-indice-complejidad.
+
+```{r}
+#| label: tbl-indice-complejidad
+#| tbl-cap: "Métricas sintéticas de complejidad y aditividad del sistema."
+
+knitr::kable(tabla_complejidad_corregida, 
+             digits = 3,
+             col.names = c("Métrica", "Asíncrona", "Mitosis", "$\\Delta$ (Mitosis-Asincrona)"))
+```
+
+La @tbl-indice-complejidad cuantifica este cambio global entre ambas condiciones experimentales:
+
+* **Índice de complejidad local:** Este indicador —que acumula las proporciones de residuo no aditivo de todas las proteoformas— experimenta una caída pronunciada de casi diez unidades, al descender de **24,3** en el estado asíncrono a **14,6** tras el tratamiento ($\Delta = -9,62$).
+* **Evolución del peso epistático frente a la aditividad:** En términos porcentuales, el peso de las interacciones globales sobre el total del modelo ya era bajo en condiciones de asincronía (**7,55%**), pero durante la mitosis se reduce a menos de la mitad, situándose en un **3,00%**. Como contrapartida, el grado de aditividad global se eleva desde el **92,4%** hasta rozar la linealidad con un **97,0%**.
+
+En conclusión, estos índices demuestran que la transición a la mitosis simplifica notablemente la estructura de los datos. Al reducirse el peso del residuo epistático a menos de la mitad, el **97,0%** de la varianza del modelo queda explicado mediante la suma de los efectos lineales directos de K9, S10 y K14.
+
+### Epistasia local en el espacio de modificaciones: análisis de interacciones dobles
+
+Para incrementar la resolución del estudio, se analizaron las interacciones locales por parejas de residuos utilizando el parámetro $\epsilon$ (épsilon). Este indicador mide la desviación de cada par respecto al comportamiento aditivo:
+
+* $\epsilon \approx 0$: Indica un comportamiento aditivo (ausencia de interacción doble).
+* $\epsilon \neq 0$: Revela una interacción de segundo orden, clasificada como **antagonismo** si el signo es negativo o **sinergia** si es positivo.
+
+A diferencia del análisis global, este examen pormenorizado permite localizar si las desviaciones del modelo se reparten de manera uniforme o si se concentran en emparejamientos específicos bajo el efecto del tratamiento.
+
+
+```{r}
+#| label: tbl-epista-local
+#| echo: false
+#| tbl-cap: "Interacciones locales con evidencia posterior fuerte ($P(\\epsilon > 0) > 0,95$ ó $< 0,05$) y magnitud elevada de desviación respecto a la aditividad ($|\\epsilon| > 0.75$)."
+
+library(kableExtra)
+
+# 1. Tu bloque de filtrado y preparación de datos (se mantiene idéntico)
+tabla_epistasia_local_resumida <- df_resumen_epistasia_local %>%
+  filter(
+    (Prob_Positiva > 0.95 | Prob_Positiva < 0.05) & 
+    abs(Media) > 0.75
+  ) %>%
+  arrange(Condicion, Tipo_Interaccion, Media) %>%
+  mutate(
+    Etiqueta = gsub("\\s*\\|\\s*", " ; ", Etiqueta)
+  ) %>%
+  select(
+    Condicion,
+    Tipo_Interaccion,
+    Etiqueta,
+    Media,
+    IC_Lower,
+    IC_Upper,
+    Prob_Positiva
+  )
+
+# 2. Generación de la tabla con formato avanzado para reducir tamaño y ajustar ancho
+knitr::kable(
+  tabla_epistasia_local_resumida,
+  digits = 3,
+  format = "latex", # Fuerza el motor de renderizado adecuado para PDF
+  booktabs = TRUE,  # Genera líneas horizontales limpias de estilo académico
+  col.names = c(
+    "Condición",
+    "Tipo de interacción",
+    "Cuadrado local",
+    "Media $\\epsilon$",
+    "$\text{IC } 2.5\\%$",
+    "$\text{IC } 97.5\\%$",
+    "$P(\\epsilon > 0)$"
+  ),
+  escape = FALSE
+) %>%
+  kable_styling(
+    latex_options = c("striped", "hold_position"), 
+    font_size = 7  # REDUCE EL TAMAÑO DE LA LETRA
+  ) %>%
+  column_spec(3, width = "5cm") # AJUSTA EL ANCHO de la columna "Cuadrado local" para que el texto no se desborde
+```
+
+```{r}
+#| label: preparar-datos-epistasia-local-todos
+#| echo: false
+
+df_epi_local_todos <- df_resumen_epistasia_local %>%
+  mutate(
+    Etiqueta = gsub("\\s*\\|\\s*", " ; ", Etiqueta),
+    Etiqueta = stringr::str_wrap(Etiqueta, width = 45),
+    Condicion = factor(Condicion, levels = c("Asíncrona", "Mitosis")),
+    Tipo_Interaccion = factor(
+      Tipo_Interaccion,
+      levels = c("Eje K9-K14", "Eje K9-S10", "Eje S10-K14")
+    )
+  )
+```
+
+```{r}
+#| label: funcion-figura-epistasia-local-todos
+#| echo: false
+# Define una función común para no repetir el codigo tres veces
+
+plot_epistasia_eje_todos <- function(datos, eje) {
+  datos_eje <- datos %>%
+    filter(Tipo_Interaccion == eje) %>%
+    group_by(Etiqueta) %>%
+    mutate(media_orden = mean(Media, na.rm = TRUE)) %>%
+    ungroup() %>%
+    mutate(
+      Etiqueta = reorder(Etiqueta, media_orden)
+    )
+  
+  ggplot(
+    datos_eje,
+    aes(
+      x = Media,
+      y = Etiqueta,
+      colour = Condicion
+    )
+  ) +
+    geom_vline(
+      xintercept = 0,
+      linetype = "dashed",
+      linewidth = 0.4,
+      alpha = 0.6
+    ) +
+    geom_errorbarh(
+      aes(xmin = IC_Lower, xmax = IC_Upper),
+      height = 0.18,
+      position = position_dodge(width = 0.6),
+      linewidth = 0.35,
+      alpha = 0.8
+    ) +
+    geom_point(
+      position = position_dodge(width = 0.6),
+      size = 1.8
+    ) +
+    labs(
+      x = "Epistasia local (ε)",
+      y = "Cuadrado local",
+      colour = "Condición"
+    ) +
+    theme_minimal(base_size = 9) +
+    theme(
+      legend.position = "bottom",
+      axis.text.y = element_text(size = 6.5),
+      axis.text.x = element_text(size = 8),
+      panel.grid.major.y = element_blank()
+    )
+}
+```
+
+```{r}
+#| label: fig-epistasia-local-k9-k14
+#| echo: false
+#| fig-cap: "Epistasia local en todos los cuadrados del eje K9--K14. Los puntos representan la media posterior de $\\epsilon$ y las barras sus intervalos creíbles del 95%."
+#| fig-height: 7
+#| fig-width: 10
+#| out-width: "100%"
+
+plot_epistasia_eje_todos(df_epi_local_todos, "Eje K9-K14")
+```
+
+```{r}
+#| label: fig-epistasia-local-k9-s10
+#| echo: false
+#| fig-cap: "Epistasia local en todos los cuadrados del eje K9--S10. Los puntos representan la media posterior de $\\epsilon$ y las barras sus intervalos creíbles del 95%."
+#| fig-height: 7
+#| fig-width: 10
+#| out-width: "100%"
+
+plot_epistasia_eje_todos(df_epi_local_todos, "Eje K9-S10")
+```
+
+```{r}
+#| label: fig-epistasia-local-s10-k14
+#| echo: false
+#| fig-cap: "Epistasia local en todos los cuadrados del eje S10--K14. Los puntos representan la media posterior de $\\epsilon$ y las barras sus intervalos creíbles del 95%."
+#| fig-height: 4.5
+#| fig-width: 10
+#| out-width: "100%"
+
+plot_epistasia_eje_todos(df_epi_local_todos, "Eje S10-K14")
+```
+
+Como evaluar todas las combinaciones genera 45 modelos locales por condición, se optó por dos estrategias complementarias. Por un lado, la @tbl-epista-local filtra únicamente los casos con fuerte evidencia estadística e impacto biológico ($P(\epsilon > 0) > 0,95$ o $< 0,05$ y $\lvert\epsilon\rvert > 0,75$). Por otro lado, las figuras (@fig-epistasia-local-k9-k14, @fig-epistasia-local-k9-s10 y @fig-epistasia-local-s10-k14) muestran el mapa completo de interacciones, lo que permite evaluar la magnitud y la incertidumbre de todos los estimadores.
+
+Al cruzar ambas fuentes, se observa cómo la mitosis reconfigura y simplifica el mapa de residuos del sistema:
+
+* **En el estado asíncrono:** Las interacciones fuertes se concentran en dos focos principales con comportamientos opuestos:
+* **Eje K9–S10 (@fig-epistasia-local-k9-s10):** Predominan los efectos marcadamente antagonistas. Las combinaciones que asocian formas de K9 con la fosforilación de S10 (especialmente `K9ac:S10ph` y `K9me3:S10ph`) arrojan valores inferiores a la suma de sus efectos lineales directos.
+* **Eje K9–K14 (@fig-epistasia-local-k9-k14):** Muestra un comportamiento dual. Coexisten sinergias claras en las transiciones hacia la tri-metilación (`K9me3:K14ac` en estado S10un) con fuertes antagonismos en las transiciones hacia la acetilación (`K9ac:K14ac` tanto en S10un como en S10ph).
+
+
+* **En el estado mitótico:** El mapa de interacciones experimenta una clara atenuación y reajuste geométrico:
+* **Atenuación general:** La magnitud absoluta de los residuos decrece de forma generalizada. El eje K9–S10 retiene su naturaleza antagonista, pero sus valores se moderan.
+* **Cambio de polaridad en el eje K9–K14 (@fig-epistasia-local-k9-k14):** Las interacciones negativas de este eje tienden hacia la aditividad, provocando que pase a estar dominado casi en su totalidad por efectos sinérgicos, liderados por las combinaciones de `K9me3:K14ac` y `K9me2:K14ac`.
+* **Eje S10–K14 (@fig-epistasia-local-s10-k14):** Aunque la mayoría de sus combinaciones operan en un régimen aditivo próximo a cero, destaca la presencia de un leve residuo antagonista en la combinación `S10ph:K14ac` sobre el fondo `K9me2`.
+
+En resumen, el análisis local describe la distribución interna de la varianza recogida en la síntesis global. La reducción del peso epistático general durante la mitosis se debe a dos fenómenos específicos: la desaparición de los efectos antagonistas en el eje K9–K14 y una moderación generalizada en la magnitud de los estimadores $\epsilon$. Como resultado, la señal no aditiva remanente se limita a la sinergia entre las formas metiladas de K9 con K14ac y al antagonismo del eje K9–S10.
+
+En conjunto, estos resultados muestran que la transición mitótica simplifica la arquitectura de las modificaciones del fragmento H3 (9–17): la fracción de varianza atribuible a las interacciones epistáticas disminuye y el modelo se vuelve más aditivo. Aunque persisten focos locales de sinergia y antagonismo —localizados casi exclusivamente en las combinaciones que implican a K9—, la complejidad no lineal se concentra en un subconjunto reducido de proteoformas, emergiendo K9 como el residuo determinante de los pocos efectos no aditivos que permanecen en el modelo.
+
+## Referencias

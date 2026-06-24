@@ -1,0 +1,203 @@
+---
+title: "Análisis diferencial de PTMs de la Histona H3 (9–17)"
+---
+
+## Introducción
+
+En este capítulo se presentan los resultados del análisis diferencial de las PTMs del fragmento H3(9–17) a partir de seis muestras biológicas, tres asíncronas y tres mitóticas, considerando un total de veinte proteoformas. Para evaluar la robustez de los cambios detectados, se comparan tres marcos estadísticos complementarios: limma-CLR, edgeR-NB y limma-voom [@smyth2004; @smyth2005; @robinson2010; @law2014].
+
+El análisis se centra en la dirección, magnitud y significancia de los cambios entre mitosis y asincronía, así como en la concordancia entre métodos. Los detalles del preprocesado, las transformaciones y el ajuste de cada modelo se han descrito en el capítulo metodológico correspondiente.
+
+## Análisis de expresión diferencial
+
+```{r}
+#| label: setup-paths
+#| include: false
+# getwd() ≈ .../RProyecto_composicional/Informes/Proyecto
+root_dir  <- getwd()
+
+# Carpeta de imágenes dentro del book
+img_dir   <- file.path(root_dir, "Imagenes")
+
+# Carpeta de datos en la raíz del proyecto
+datos_dir <- file.path(root_dir, "..", "..", "DatosProcesados")
+```
+
+```{r}
+#| label: cargar-resultados-bioinfo
+#| include: false
+
+suppressPackageStartupMessages({
+  library(tidyverse)
+  library(ggrepel)
+  library(GGally)
+  library(ggVennDiagram)
+  library(knitr)
+})
+
+archivo_resultados <- file.path(datos_dir, "32_resultados_bioinfo.rds")
+
+if (!file.exists(archivo_resultados)) {
+  stop(
+    "No se encuentra el archivo de resultados precalculados: ", archivo_resultados, "\n",
+    "Ejecuta antes el script: ScriptsR/32_expresion_diferencial.R"
+  )
+}
+
+res_bioinfo <- readRDS(archivo_resultados)
+
+# Tablas necesarias para el documento
+resultados_limma <- res_bioinfo$tablas$resultados_limma
+resultados_edgeR <- res_bioinfo$tablas$resultados_edgeR
+resultados_voom  <- res_bioinfo$tablas$resultados_voom
+tabla_comparativa <- res_bioinfo$tablas$tabla_comparativa
+lista_significativas <- res_bioinfo$tablas$lista_significativas
+
+# Datos ya preparados para figuras
+volcano_limma <- res_bioinfo$graficas$volcano_limma
+volcano_edgeR <- res_bioinfo$graficas$volcano_edgeR
+volcano_voom  <- res_bioinfo$graficas$volcano_voom
+
+# Función gráfica auxiliar para la matriz de comparación de logFC
+panel_dispersion <- function(data, mapping, ...) {
+  ggplot(data = data, mapping = mapping) +
+    geom_point(color = "#1f78b4", alpha = 0.7, size = 2) +
+    geom_smooth(method = "lm", se = FALSE, color = "#e31a1c", linewidth = 0.8, ...) +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey50") +
+    theme_minimal()
+}
+```
+
+### Modelo para proporciones: limma-CLR
+
+Aplicamos un modelo lineal moderado con limma sobre datos transformados mediante CLR para comparar las abundancias relativas de las proteoformas entre los estados asincrónico y mitótico (para detalles, ver el capítulo de Métodos) [@smyth2004; @smyth2005].
+
+\Needspace{24\baselineskip}
+
+```{r}
+#| label: tbl-result-limma
+#| tbl-cap: "Coeficientes de cambio (logFC), estadístico t y valor ajustado de p (FDR) obtenidos con el modelo limma-CLR para cada proteoforma de H3(9–17) en el contraste mitótico vs asincrónico."
+
+knitr::kable(
+  resultados_limma[ , c(1, 3, 5)],
+  digits = 3,
+  booktabs = TRUE
+)
+```
+
+En la @tbl-result-limma se observa que la mayoría de proteoformas presentan diferencias significativas entre condiciones, con un claro enriquecimiento mitótico de las variantes que incorporan fosforilación en S10 y una disminución de varias formas no fosforiladas. S10phK14ac y K9me1S10ph muestran los mayores logFC positivos, mientras que K9acK14ac concentra la mayor depleción relativa en mitosis; K9acS10phK14ac destaca como la única proteoforma fosforilada sin alcanzar significancia estadística.
+
+```{r}
+#| label: fig-volcano-limma
+#| fig-cap: "Volcano plot de los coeficientes de cambio (logFC) obtenidos mediante limma tras transformación CLR. El eje X representa el logFC, mientras que el eje Y muestra la significancia estadística como –log10 del valor ajustado de p. Las PTMs significativas (FDR < 0.05) se destacan en rojo."
+
+ggplot(volcano_limma, aes(x = logFC, y = neglog10FDR)) +
+  geom_point(aes(color = significativa), size = 3) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  geom_text_repel(aes(label = PTM), size = 3) +
+  scale_color_manual(values = c("black", "red")) +
+  theme_minimal() +
+  labs(
+    title = "Volcano Plot — limma (CLR + IBMT)",
+    x = "logFC (CLR)",
+    y = "-log10(adj.p-value)",
+    color = "FDR < 0.05"
+  )
+```
+
+El volcano plot de la @fig-volcano-limma refleja este patrón: las proteoformas no fosforiladas se agrupan mayoritariamente en el lado de logFC negativos, mientras que casi todas las variantes con fosforilación en S10 se sitúan en el lado positivo y por encima del umbral de significancia, consolidando un perfil bimodal de aumento/disminución entre marcas fosforiladas y no fosforiladas.
+
+### Modelos para conteos: edgeR y limma-voom
+
+Como aproximaciones basadas en conteos, se aplicaron edgeR-NB y voom-limma sobre recuentos normalizados para evaluar la estabilidad de los resultados bajo dos marcos estadísticos relacionados (para detalles, ver el capítulo de Métodos) [@robinson2010; @law2014]. Ambos enfoques recuperan un patrón altamente concordante, por lo que se presentan aquí de forma conjunta.
+
+```{r}
+#| label: tbl-resultvoom
+#| tbl-cap: "Resultados representativos de los modelos para conteos mediante voom-limma."
+
+knitr::kable(resultados_voom[ ,c(1, 2, 4, 6)], digits = 3)
+```
+
+La @tbl-resultvoom muestra que los mayores incrementos en mitosis corresponden a proteoformas con fosforilación en S10, mientras que K9acK14ac presenta la mayor disminución relativa. De forma consistente con edgeR-NB, K9acS10phK14ac se mantiene como la única variante fosforilada que no alcanza significancia estadística, reforzando la robustez de este patrón entre modelos.
+
+```{r}
+#| label: fig-volcano-edge
+#| fig-cap: "Volcano plot representativo de los modelos para conteos, obtenido mediante edgeR sobre pseudo-conteos normalizados con TMM y modelo binomial negativo. El eje X representa el logFC, mientras que el eje Y muestra la significancia estadística como –log10 del FDR. Las PTMs significativas (FDR < 0.05) se destacan en rojo."
+#| warning: false
+
+ggplot(volcano_edgeR, aes(x = logFC, y = neglog10FDR)) + 
+  geom_point(aes(color = significativa), size = 3) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed") +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  geom_text_repel(aes(label = PTM), size = 3) +
+  scale_color_manual(values = c("black", "red")) +
+  theme_minimal() +
+  labs(
+    title = "Volcano Plot — modelos para conteos (edgeR)",
+    x = "logFC (NB)",
+    y = "-log10(FDR)",
+    color = "FDR < 0.05"
+  )
+```
+
+El volcano plot de la @fig-volcano-edge resume el comportamiento común de los modelos para conteos: las proteoformas con fosforilación en S10 se agrupan en la región de logFC positivos y alta significancia, mientras que la mayoría de las formas no fosforiladas muestran cambios negativos o más discretos. En conjunto, edgeR-NB y voom-limma confirman el enriquecimiento mitótico de las variantes fosforiladas y la menor respuesta diferencial de las marcas exclusivamente acetiladas o metiladas.
+
+## Comparación de los modelos
+
+Aunque limma-CLR, edgeR-NB y voom-limma parten de formulaciones y supuestos de distribución distintos, los tres comparten una estructura jerárquica diseñada para mitigar la baja replicación biológica, combinando moderación empírico-bayesiana, ajuste de la relación media-varianza y control de la FDR (ver capítulo de Métodos).
+
+### Tamaño del efecto
+
+```{r}
+#| label: fig-comparacion-logfc
+#| fig-cap: "Matriz de comparación analítica de los coeficientes de cambio (logFC) estimados para las proteoformas de H3(9–17) bajo los tres marcos estadísticos. La diagonal muestra la densidad estimada de los efectos; la mitad inferior presenta los gráficos de dispersión bivariados con su línea de ajuste lineal (rojo) frente a la línea de identidad (gris discontinuo); la mitad superior indica el coeficiente de correlación de Pearson (r)."
+#| fig-width: 7
+#| fig-height: 6
+#| out-width: "100%"
+
+tabla_comparativa %>%
+  select(
+    `limma-CLR`  = logFC_limma, 
+    `edgeR-NB`   = logFC_edgeR, 
+    `voom-limma` = logFC_voom
+  ) %>%
+  ggpairs(
+    lower = list(continuous = panel_dispersion),
+    upper = list(continuous = wrap("cor", size = 4.5, color = "black")),
+    diag  = list(continuous = wrap("densityDiag", fill = "#3182bd", alpha = 0.4))
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text        = element_text(face = "bold"),
+    panel.grid.minor  = element_blank()
+  )
+```
+
+La @fig-comparacion-logfc muestra una concordancia alta en los tamaños de efecto estimados por los tres modelos, con coeficientes de correlación de Pearson próximos a 1 y un mismo perfil bimodal de logFC que separa claramente las proteoformas fosforiladas en S10 (logFC positivos) de las no fosforiladas (logFC negativos o cercanos a cero). Las diferencias entre modelos se concentran en la escala de los efectos, con limma-CLR produciendo logFC más contenidos, edgeR-NB ampliando las magnitudes extremas y voom-limma situándose en un rango intermedio.
+
+### Concordancia en la selección de proteoformas significativas
+
+```{r}
+#| label: fig-venn-ptms
+#| fig-cap: "Diagrama de Venn que cuantifica la intersección de las proteoformas identificadas como estadísticamente significativas (FDR < 0.05) por los marcos matemáticos analizados."
+#| fig-width: 5
+#| fig-height: 4
+#| out-width: "100%"
+
+names(lista_significativas) <- c("limma-CLR", "voom-limma", "edgeR-NB")
+
+ggVennDiagram(lista_significativas, label_alpha = 0.25) +
+  scale_fill_gradient(low = "#f7fbff", high = "#084594") +
+  scale_x_continuous(expand = expansion(mult = 0.15)) +
+  scale_y_continuous(expand = expansion(mult = c(0.1, 0.2))) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.grid      = element_blank(),
+    axis.text       = element_blank(),
+    axis.title      = element_blank()
+  )
+```
+
+El diagrama de Venn de la @fig-venn-ptms revela un solapamiento mayoritario entre los tres enfoques, con un núcleo central de 13 proteoformas significativas comunes que representan la mayor parte de las PTMs reguladas. La transformación composicional de limma-CLR añade un pequeño conjunto de marcas exclusivas que no alcanzan significancia en los modelos basados en conteos, mientras que edgeR-NB y voom-limma coinciden completamente entre sí. En conjunto, estos resultados indican que las discrepancias entre métodos se deben principalmente a diferencias de sensibilidad y escala, más que a señales biológicas contradictorias.

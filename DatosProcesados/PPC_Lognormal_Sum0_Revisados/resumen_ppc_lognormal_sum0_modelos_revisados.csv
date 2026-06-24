@@ -1,0 +1,197 @@
+"modelo","bloque_ppc","estadistico","componente","p_ppc"
+"lognor_v1_sum0coef_revisado","global","centroide_aitchison","global",0.3665
+"lognor_v1_sum0coef_revisado","global","variacion_total_clr","global",0.1779375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","unmod",0.435
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1",0.4366875
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2",0.4138125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3",0.4220625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9ac",0.5669375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K14ac",0.474
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1K14ac",0.478875
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2K14ac",0.458
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3K14ac",0.4555625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acK14ac",0.5310625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","S10ph",0.5769375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1S10ph",0.5974375
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2S10ph",0.543125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3S10ph",0.5436875
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acS10ph",0.647125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","S10phK14ac",0.592625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1S10phK14ac",0.598625
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2S10phK14ac",0.5628125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3S10phK14ac",0.5698125
+"lognor_v1_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acS10phK14ac",0.6270625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","unmod",0.3184375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1",0.3250625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2",0.31475
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3",0.2549375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9ac",0.2885625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K14ac",0.37575
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1K14ac",0.3815625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2K14ac",0.2204375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3K14ac",0.209875
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acK14ac",0.4144375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","S10ph",0.4569375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10ph",0.2376875
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10ph",0.6125
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10ph",0.6009375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acS10ph",0.283
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","S10phK14ac",0.225375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10phK14ac",0.0939375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10phK14ac",0.4860625
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10phK14ac",0.5134375
+"lognor_v1_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acS10phK14ac",0.6200625
+"lognor_v1_sum0coef_revisado","balances","media_balance","S10ph vs No-S10ph",0.6346875
+"lognor_v1_sum0coef_revisado","balances","media_balance","Mod vs Unmod",0.635
+"lognor_v1_sum0coef_revisado","balances","media_balance","Ac vs No-Ac",0.532375
+"lognor_v1_sum0coef_revisado","balances","varianza_balance","S10ph vs No-S10ph",0.1580625
+"lognor_v1_sum0coef_revisado","balances","varianza_balance","Mod vs Unmod",0.3184375
+"lognor_v1_sum0coef_revisado","balances","varianza_balance","Ac vs No-Ac",0.4428125
+"lognor_v1_sum0coef_revisado","varianza_clr","T_clr","global",0.1779375
+"lognor_v1_dia_sum0coef_revisado","global","centroide_aitchison","global",0.3714375
+"lognor_v1_dia_sum0coef_revisado","global","variacion_total_clr","global",0.1761875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","unmod",0.430625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1",0.440875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2",0.4245625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3",0.42225
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9ac",0.5580625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K14ac",0.4788125
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1K14ac",0.47525
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2K14ac",0.46575
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3K14ac",0.4638125
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acK14ac",0.519875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","S10ph",0.5581875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1S10ph",0.5850625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2S10ph",0.5376875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3S10ph",0.538625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acS10ph",0.6391875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","S10phK14ac",0.5905625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me1S10phK14ac",0.5946875
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me2S10phK14ac",0.575625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9me3S10phK14ac",0.5875625
+"lognor_v1_dia_sum0coef_revisado","marginal","centroide_por_proteoforma","K9acS10phK14ac",0.61525
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","unmod",0.3181875
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1",0.328875
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2",0.277
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3",0.2284375
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9ac",0.2646875
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K14ac",0.3676875
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1K14ac",0.372625
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2K14ac",0.159
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3K14ac",0.1494375
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acK14ac",0.3935
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","S10ph",0.4911875
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10ph",0.2591875
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10ph",0.616
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10ph",0.6125
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acS10ph",0.307
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","S10phK14ac",0.255125
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10phK14ac",0.11725
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10phK14ac",0.50125
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10phK14ac",0.52975
+"lognor_v1_dia_sum0coef_revisado","marginal","varianza_clr_por_proteoforma","K9acS10phK14ac",0.6035625
+"lognor_v1_dia_sum0coef_revisado","balances","media_balance","S10ph vs No-S10ph",0.61075
+"lognor_v1_dia_sum0coef_revisado","balances","media_balance","Mod vs Unmod",0.6308125
+"lognor_v1_dia_sum0coef_revisado","balances","media_balance","Ac vs No-Ac",0.5216875
+"lognor_v1_dia_sum0coef_revisado","balances","varianza_balance","S10ph vs No-S10ph",0.1814375
+"lognor_v1_dia_sum0coef_revisado","balances","varianza_balance","Mod vs Unmod",0.3181875
+"lognor_v1_dia_sum0coef_revisado","balances","varianza_balance","Ac vs No-Ac",0.488375
+"lognor_v1_dia_sum0coef_revisado","varianza_clr","T_clr","global",0.1763125
+"lognor_v1_sum0coef_delta_comun_revisado","global","centroide_aitchison","global",0.41225
+"lognor_v1_sum0coef_delta_comun_revisado","global","variacion_total_clr","global",0.343
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","unmod",0.41575
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1",0.4329375
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2",0.4055
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3",0.416625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9ac",0.5155
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K14ac",0.43925
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1K14ac",0.4415625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2K14ac",0.4245625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3K14ac",0.43425
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9acK14ac",0.5095625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","S10ph",0.5215625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1S10ph",0.530875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2S10ph",0.5036875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3S10ph",0.5031875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9acS10ph",0.6030625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","S10phK14ac",0.5360625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1S10phK14ac",0.539625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2S10phK14ac",0.5105
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3S10phK14ac",0.5205
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9acS10phK14ac",0.586875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","unmod",0.5339375
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1",0.5605625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2",0.48275
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3",0.4186875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9ac",0.3005625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K14ac",0.545125
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1K14ac",0.559375
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2K14ac",0.435625
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3K14ac",0.422
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9acK14ac",0.5006875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","S10ph",0.4476875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10ph",0.239
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10ph",0.54375
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10ph",0.6573125
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9acS10ph",0.2649375
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","S10phK14ac",0.225
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10phK14ac",0.0504375
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10phK14ac",0.5318125
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10phK14ac",0.622875
+"lognor_v1_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9acS10phK14ac",0.5955625
+"lognor_v1_sum0coef_delta_comun_revisado","balances","media_balance","S10ph vs No-S10ph",0.62525
+"lognor_v1_sum0coef_delta_comun_revisado","balances","media_balance","Mod vs Unmod",0.5758125
+"lognor_v1_sum0coef_delta_comun_revisado","balances","media_balance","Ac vs No-Ac",0.52025
+"lognor_v1_sum0coef_delta_comun_revisado","balances","varianza_balance","S10ph vs No-S10ph",0.17675
+"lognor_v1_sum0coef_delta_comun_revisado","balances","varianza_balance","Mod vs Unmod",0.5339375
+"lognor_v1_sum0coef_delta_comun_revisado","balances","varianza_balance","Ac vs No-Ac",0.481875
+"lognor_v1_sum0coef_delta_comun_revisado","varianza_clr","T_clr","global",0.343
+"lognor_v1_dia_sum0coef_delta_comun_revisado","global","centroide_aitchison","global",0.4305
+"lognor_v1_dia_sum0coef_delta_comun_revisado","global","variacion_total_clr","global",0.3406875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","unmod",0.43075
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1",0.44925
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2",0.42225
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3",0.427875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9ac",0.5181875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K14ac",0.4505625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1K14ac",0.4546875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2K14ac",0.43975
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3K14ac",0.444625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9acK14ac",0.5099375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","S10ph",0.5146875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1S10ph",0.5259375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2S10ph",0.5014375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3S10ph",0.50325
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9acS10ph",0.5776875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","S10phK14ac",0.53075
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me1S10phK14ac",0.5379375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me2S10phK14ac",0.512125
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9me3S10phK14ac",0.5089375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","centroide_por_proteoforma","K9acS10phK14ac",0.572875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","unmod",0.5345625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1",0.5518125
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2",0.47825
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3",0.4283125
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9ac",0.315875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K14ac",0.554625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1K14ac",0.5798125
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2K14ac",0.435875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3K14ac",0.427125
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9acK14ac",0.510625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","S10ph",0.4341875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10ph",0.25375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10ph",0.5484375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10ph",0.6331875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9acS10ph",0.2850625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","S10phK14ac",0.244875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me1S10phK14ac",0.0723125
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me2S10phK14ac",0.5341875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9me3S10phK14ac",0.6046875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","marginal","varianza_clr_por_proteoforma","K9acS10phK14ac",0.4741875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","balances","media_balance","S10ph vs No-S10ph",0.602
+"lognor_v1_dia_sum0coef_delta_comun_revisado","balances","media_balance","Mod vs Unmod",0.556625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","balances","media_balance","Ac vs No-Ac",0.5135625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","balances","varianza_balance","S10ph vs No-S10ph",0.21875
+"lognor_v1_dia_sum0coef_delta_comun_revisado","balances","varianza_balance","Mod vs Unmod",0.5345625
+"lognor_v1_dia_sum0coef_delta_comun_revisado","balances","varianza_balance","Ac vs No-Ac",0.4864375
+"lognor_v1_dia_sum0coef_delta_comun_revisado","varianza_clr","T_clr","global",0.3406875

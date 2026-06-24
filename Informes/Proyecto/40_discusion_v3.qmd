@@ -1,0 +1,156 @@
+---
+title: "Discusión"
+bibliography: references.bib
+---
+
+```{r}
+#| label: setup-paths
+#| include: false
+
+root_dir  <- getwd()
+
+# Carpeta de imágenes dentro del book
+img_dir   <- file.path(root_dir, "Informes", "Proyecto", "Imagenes")
+
+# Carpeta de datos dentro del proyecto
+datos_dir <- file.path(root_dir, "..", "..", "DatosProcesados")
+```
+
+## Panorama general de los resultados
+
+La transición del estado asíncrono a la mitosis en el fragmento H3 9–17 no puede describirse como una simple suma de cambios independientes en proteoformas aisladas. Los datos indican que este paso implica un **reajuste global del conjunto de modificaciones**, donde las dependencias entre marcas (epistasia) tienen un papel central. Tanto los modelos lineales moderados como el análisis descriptivo y los modelos bayesianos coinciden en señalar un **eje principal de cambio** dominado por la fosforilación en S10 y por sus combinaciones con la acetilación en K14 y la metilación en K9. [@jenuwein2001; @lee2010; @berger2007].
+
+En este contexto, el modelo Dirichlet epistático con κ común y un efecto aleatorio de día es el modelo de referencia para interpretar los resultados desde el punto de vista biológico. La comparación reciente entre familias de modelos muestra que esta formulación ofrece el mejor equilibrio entre convergencia, parsimonia, capacidad predictiva fuera de muestra e interpretabilidad. Todos los modelos ajustados presentan una convergencia MCMC adecuada, pero la familia Dirichlet epistática con efecto de día destaca por su mejor rendimiento según el WAIC y el LOO-IC. Además, separa con claridad los paisajes composicionales de los estados asíncrono y mitótico, con diferencias KL simétricas cercanas a $1.5×10^3$.( sección[@sec-capacidad-predictiva-fuera-muestra].)
+
+## Discusión metodológica
+
+### Necesidad de modelos composicionales
+
+El análisis descriptivo del fragmento H3 9–17 muestra que, incluso antes de aplicar modelos de inferencia, la estructura misma de los datos obliga a trabajar en el simplex y no en un espacio euclídeo convencional [@aitchison1986; @pawlowsky-glahn2006; @egozcue2006]. El uso del centro de Aitchison, la matriz de variación y las representaciones en coordenadas CLR e ILR revela un cambio sistemático en la distribución composicional entre los estados asíncrono y mitótico, junto con patrones de covariación entre distintas proteoformas [@daunis-i-estadella2006; @egozcue2005; @egozcue2006]. Estas herramientas descriptivas no solo resumen los datos: también dejan claro por qué es necesario emplear modelos que respeten la suma constante y las relaciones entre componentes propias de los datos composicionales [@filzmoser2018; @greenacre2021; @quinn2019].
+
+Los centros composicionales muestran que el estado asíncrono está dominado por proteoformas no fosforiladas (*unmod*, K9me2, K9me3 y K14ac), mientras que en mitosis aumentan las formas con S10ph y sus combinaciones [@aitchison1986; @daunis-i-estadella2006]. Las matrices de variación confirman que esta transición no es una mera aparición de marcas aisladas, sino una redistribución coordinada del conjunto de modificaciones, caracterizada por el incremento de formas fosfo‑metilo y fosfo‑acetilo‑metilo frente a la reducción de estados no modificados o solo acetilados [@filzmoser2018]. Este comportamiento relacional justifica que los contrastes entre condiciones deban formularse sobre vectores composicionales completos o balances log‑ratio, evitando el análisis de abundancias individuales que ignora la interdependencia de los datos [@egozcue2003; @egozcue2006; @quinn2019].
+
+El PCA-ilr muestra que las dos primeras componentes explican más del 90 % de la variabilidad total y separan claramente las muestras asíncronas de las mitóticas. La primera dimensión resume el contraste entre formas fosforiladas en S10 y no fosforiladas, mientras que la segunda organiza diferencias internas en el módulo no fosforilado. Desde la fase exploratoria se observa que la principal fuente de variación biológica es un cambio en el eje H3K9-H3S10-H3K14, orienta a la necesidad del usar modelos estadísticos que integren composición, dependencia y heterogeneidad entre réplicas [@pawlowsky-glahn2006; @quinn2019; @greenacre2021].
+
+### Modelos lineales moderados
+
+Los resultados descriptivos indican que una parte de la diferencia entre condiciones puede representarse, en la escala de log‑ratio, como cambios independientes en la abundancia de cada proteoforma. En este sentido, limma sobre coordenadas CLR es una primera aproximación natural, ya que permite conectar la exploración composicional con una inferencia formal basada en modelos lineales y moderación empírico‑bayesiana [@smyth2004; @ritchie2015]. La transformación CLR proyecta las composiciones a un subespacio euclídeo de suma cero, en el que las diferencias de medias entre estados pueden entenderse como contrastes de log-ratios centrados[@aitchison1986].
+
+Una de las principales ventajas de esta estrategia es su solidez, especialmente cuando se trabaja con pocas réplicas. Con solo tres muestras por condición, la moderación bayesiana de varianzas que implementa *limma* resulta esencial para estabilizar los errores estándar y, con ello, aumentar la potencia para detectar cambios en proteoformas de baja abundancia[@smyth2004; @phipson2016]. En nuestro caso, el modelo limma‑CLR identifica un conjunto amplio de proteoformas reguladas de forma diferencial, con un claro enriquecimiento en mitosis de variantes con S10ph y una disminución relativa de las formas no fosforiladas o únicamente acetiladas.
+
+Dado que los datos proceden de abundancias relativas generadas por espectrometría de masas —una técnica que introduce heterocedasticidad y deja muchas proteoformas minoritarias cerca del límite de detección [@garcia2021; @paparella2022]— es importante comprobar que las conclusiones no dependen exclusivamente de la transformación elegida ni de una familia de distribución concreta. La versión del modelo *limma-CLR* utilizado, ya incorpora una moderación bayesiana empírica de las varianzas [@smyth2004; @smyth2005; @ritchie2015], la cual estabiliza la relación entre la varianza y el nivel medio de la señal en la escala de razones logarítmicas. Aun así, se contrastaron los resultados con dos métodos alternativos basados en pseudoconteos: *edgeR-NB* y *limma-voom* [@robinson2010; @law2014] , los cuales modelan la dependencia de la varianza respecto de la media en la escala de conteos (mediante la dispersión binomial negativa en *edgeR* y los pesos de precisión en *voom*).
+
+Estos métodos se diseñaron originalmente para datos transcriptómicos, que también son composicionales pero analizan un número muy elevado de genes bajo el supuesto de que la mayoría permanece estable entre condiciones[@smyth2004; @ritchie2015; @robinson2010; @quinn2019]. Bajo estas hipótesis, la distribución conjunta puede aproximarse mediante modelos casi independientes para cada gen, por lo que resulta práctico aplicar análisis univariantes con corrección por pruebas múltiples. En proteómica se suele adoptar una lógica similar, y por ello *edgeR* y *limma-voom* se han extendido al análisis de proteínas y péptidos.
+
+En el campo de la proteómica, es habitual recurrir a la transformación de razones de logaritmos centrados (CLR) para tratar la naturaleza composicional de los datos[@pawlowsky-glahn2006; @egozcue2006], combinándola con herramientas de modelos lineales como limma [@smyth2004; @phipson2016; @ritchie2015]. Este enfoque soslaya la restricción de suma uno y emplea técnicas de Bayes empírico para estabilizar las varianzas [@smyth2004; @phipson2016] sin embargo, exige ajustar modelos independientes para cada coordenada CLR y aplicar correcciones por multiplicidad de contrastes mediante control de FDR [@benjamini1995; @tusher2001].
+
+En nuestro caso, al trabajar con un número moderado de proteoformas, este procedimiento univariante resulta restrictivo. Al evaluar las coordenadas de forma aislada, se ignora la dependencia matemática que la transformación CLR introduce en todas las variables debido al uso de un denominador común [@pawlowsky-glahn2006; @egozcue2006]. Como consecuencia, la penalización del FDR por realizar múltiples contrastes tiende a mermar la potencia estadística[@benjamini1995], a diferencia de un modelo multivariante conjunto que saca partido de la estructura global y de la covariación real de los datos [@greenacre2023].
+
+Pese a estas diferencias, *edgeR-NB*, *limma-voom* y *limma-CLR* reflejan el mismo patrón general y muestran una alta concordancia tanto en los valores de cambio logarítmico (*logFC*) como en la selección de proteoformas significativas. Esta coincidencia sugiere que las discrepancias entre los métodos se deben sobre todo a matices en la forma de modelar la relación entre varianza y media, y no a contradicciones en la señal biológica subyacente.
+
+### Modelos bayesianos para el análisis de datos composicionales
+
+Los modelos lineales moderados permiten detectar cambios específicos en cada proteoforma, pero analizan las variables de forma aislada y no describen cómo se reorganiza el vector composicional completo entre los distintos estados celulares. [@smyth2004; @ritchie2015]. La regresión de Dirichlet clásica resuelve en parte esta limitación, ya que modela simultáneamente todas las proporciones en el símplex y compara las condiciones experimentales mediante distribuciones de composiciones [@maier2014; @gueorguieva2008; @hijazi2009].
+
+La evalúación con junta de estos modelos confirma que las variantes que incluyen el efecto del día mejoran notablemente el ajuste (según los criterios LOO‑IC y WAIC) y aumentan la separación entre estados medida por la divergencia de Kullback–Leibler. Este resultado corrobora la relevancia de la heterogeneidad entre días en el diseño experimental. [@vehtari2012; @vehtari2017; @nawa2024]
+
+Aun así, la regresión de Dirichlet clásica mantiene una estructura de covarianza excesivamente rígida en la que se asume, a priori, que las abundancias de las diferentes proteoformas son independientes entre sí, compartan o no modificaciones en sus residuos. Esta asunción impide que el modelo incorpore de forma explícita la red de dependencias biológicas existentes en el fragmento H3 (residuos 9–17) [@aitchison1986; @egozcue2006].Los modelos Dirichlet epistáticos resuelven esta limitación al definir la media composicional a partir de un campo energético sobre el grafo de Hamming de las proteoformas. Este campo se regulariza mediante una distribución a priori de mínima epistasia que favorece perfiles suaves, salvo en aquellos puntos donde los datos sustentan la existencia de diferencias locales [@zhou2020; @chen2021]. Desde el punto de vista metodológico, esto equivale a una regularización estructurada muy adecuada para sistemas con proteoformas de baja abundancia y pocas observaciones. Además, permite extraer, a partir de un único modelo, tanto las medias composicionales como el campo energético en el que se fundamentan la descomposición ortogonal de la varianza y el análisis de la epistasia global y local. [@phillips2008; @karch2013; @álvarez-castro2019].
+
+Disponer de esta distribución a posteriori conjunta sobre todo el vector composicional permite comprender de manera global cómo cambian las marcas químicas y las dependencias entre ellas, superando la simple identificación de proteoformas que varían significativamente entre dos condiciones experimentales. En concreto, el modelo hace posible evaluar cómo las interacciones locales entre marcas se modifican en presencia de otras modificaciones y cómo varían según la condición celular (asíncrona o mitosis); esta información se perdería por completo si las proteoformas se analizaran de manera aislada con modelos lineales independientes.
+
+Dentro de esta familia de modelos, la variante con $\kappa$ común y efecto aleatorio de día ofrece el mejor equilibrio entre ajuste y parsimonia (según los criterios LOO‑IC y WAIC) y genera las mayores divergencias de Kullback-Leibler entre estados, por lo que se adopta como referencia principal para la interpretación biológica.
+
+Como alternativa metodológica, se evaluaron modelos log‑normales epistáticos en el espacio de coordenadas ILR (isometric log-ratio). Estos modelos comparten la misma estrategia de regularización sobre el grafo, pero asumen normalidad multivariante en las coordenadas y trasladan la estructura epistática a la matriz de precisión [@aitchison1980; @merris1994; @vandenboogaart2013]. Aunque este enfoque vincula de forma natural el análisis con el PCA‑ILR y permite interpretar la epistasia como restricciones sobre la covarianza de los balances, tiende a subestimar la variación en el espacio CLR (centered log-ratio). Esta limitación es especialmente notoria en balances biológicamente determinantes, como el que contrapone las formas con S10ph frente a las que carecen de ella (S10ph frente a no‑S10ph), lo que se traduce en una menor capacidad predictiva y en divergencias de Kullback-Leibler más modestas que las obtenidas con la familia Dirichlet. [@oguamalam2022] En conjunto, la comparación entre la regresión de Dirichlet, los modelos Dirichlet epistáticos y los modelos log‑normales demuestra que la estructura bayesiana es robusta respecto a la elección de la familia estadística; sin embargo, sitúa al modelo Dirichlet epistático con $\kappa$ común y efecto de día como el marco más informativo para sintetizar e interpretar los perfiles composicionales de las proteoformas.
+
+## Discusión biológica y epistasia
+
+### El patrón principal de cambio y el papel de S10ph
+
+Los análisis descriptivos y de expresión diferencial ya apuntaban a que la transición composicional del fragmento H3 (9–17) entre el estado asíncrono y la mitosis está dominada por la fosforilación en S10, con una redistribución desde las proteoformas no fosforiladas hacia combinaciones que incorporan H3S10ph, especialmente en ausencia de acetilación en K14. Esta reorganización se cuantifica de forma precisa mediante el modelo Dirichlet epistático con $\kappa$ común y efecto aleatorio por día, que identifica de manera robusta las proteoformas responsables del cambio al integrar la variabilidad entre réplicas. Las proteoformas con S10ph —aislada o combinada con metilación en K9 y acetilación en K14— muestran un incremento notable en mitosis, mientras que las variantes sin S10ph reducen su peso composicional, siendo este descenso especialmente acusado en la forma no modificada (*unmod*) y en combinaciones exclusivamente acetiladas o metiladas. Este patrón de enriquecimiento se mantiene estable en los log-cocientes y los balances ILR, lo que confirma una señal biológica robusta vinculada directamente a H3S10ph.
+
+El modelo Dirichlet epistático con $\kappa$ común y efecto aleatorio por día confirma esta tendencia (@tbl-logratio-Q-epistasia). Mediante este enfoque, se observa que las proteoformas con S10ph aumentan su proporción relativa en mitosis frente a la condición asíncrona, mientras que las variantes no fosforiladas experimentan un cambio en sentido opuesto. Esta estructura matemática permite descomponer el fragmento H3 (9–17) en efectos aditivos y epistáticos, desglosando cómo se reorganizan la metilación de K9 y la acetilación de K14 bajo la influencia de la señal mitótica principal.
+
+### Análisis composicional de la desacetilación durante la mitosis
+
+Uno de los objetivos de este trabajo era contrastar la hipótesis tradicional que sostiene que se produce una desacetilación masiva durante la mitosis, una conclusión derivada de estudios globales del acetiloma y de la compactación cromosómica en la fase M [@wilkins2014; @feller2015; @alabert2015]. Los resultados obtenidos en los log-cocientes composicionales muestran una tendencia clara: las proteoformas que carecen de S10ph —incluidas la forma no modificada, las metilaciones puras en K9 y la mayoría de las formas exclusivamente acetiladas— presentan log-cocientes de cambio ($logFC$) negativos, lo que indica que su abundancia disminuye durante la mitosis. Entre las variantes acetiladas, el comportamiento de K9acK14ac es el caso más representativo, ya que muestra el descenso más pronunciado y constante en todos los modelos analizados. Este hallazgo concuerda con la tesis de que la acetilación de lisinas señala estados de cromatina abierta que se ven alterados por los procesos de condensación mitótica [@rothbart2014; @blakey2015; @feller2015].
+
+Sin embargo, este comportamiento no se extiende de forma uniforme a todas las proteoformas acetiladas. La variante K9ac muestra cambios modestos, con intervalos de credibilidad que incluyen el cero, mientras que K9acS10phK14ac es la única forma fosforilada que no presenta un efecto nítido en los modelos lineales moderados, a pesar de mostrar un $logFC$ moderado. Al mismo tiempo, variantes combinadas como S10phK14ac —y en menor medida K9acS10ph— experimentan un incremento notable durante la mitosis, con log-cocientes de cambio ($logFC$) marcadamente positivos.
+
+Al comparar las proteoformas que difieren únicamente en la presencia de S10ph, el modelo Dirichlet epistático muestra que las combinaciones S10phK14ac presentan energías más bajas, mayor abundancia relativa, que sus contrapartidas sin fosforilación en S10 (@tbl-delta-log2). Este patrón indica que la fosforilación en S10 favorece estados acetilados en K14, en línea con el *crosstalk* descrito en la literatura [@lo2000; @cheung2000; @suganuma2008].
+
+En conjunto, estos datos muestran que la pérdida de acetilación en la mitosis depende de qué combinaciones concretas de marcas estén presentes. Es importante aclarar que esta relación describe las reglas mecánicas de colocación y compatibilidad entre modificaciones, y no los efectos que estas puedan tener después en la expresión de los genes. Los resultados respaldan, por tanto, un «lenguaje» combinatorio dinámico: la presencia de una marca cambia la probabilidad de que las enzimas añadan o eliminen las modificaciones vecinas [@jenuwein2001; @lee2010; @karch2013].
+
+Las coordenadas ILR[@egozcue2003; @greenacre2021] ayudan a sistematizar esta aparente heterogeneidad. El balance $z_1$ es una coordenada ILR que compara el grupo de proteoformas con S10ph frente al grupo sin S10ph. En la práctica, cuantifica el cambio en la media de los log-cocientes entre la probabilidad media de las proteoformas fosforiladas en S10 y la probabilidad media de las no fosforiladas (@tbl-balances-z y @fig-balances-acetilacion-epistasia), lo que permite resumir en una sola coordenada la redistribución de masa composicional entre ambos grupos. Este hecho concuerda con su función de interruptor mitótico, el cual desencadena la expulsión de HP1 (una proteína esencial para mantener el ADN empaquetado y silencioso) y permite la reorganización global de la cromatina [@hirota2005; @alabert2015].
+
+Por su parte, el análisis de los siguientes balances permite evaluar, de forma aislada, la diferencia de acetilación en presencia o ausencia de la fosforilación. En las histonas que no están fosforiladas (balance $z_2$), los niveles de acetilación apenas cambian y se mantienen próximos a cero. Por el contrario, en las histonas que sí están fosforiladas (balances $z_3$ y $z_4$), la acetilación disminuye de manera evidente, observándose un desplazamiento claro desde estados con dos acetilaciones hacia formas con una sola. Este comportamiento refleja que la pérdida de acetilación durante la mitosis no ocurre de forma general, sino que se concentra específicamente en las variantes que ya han sido fosforiladas (@fig-balances-acetilacion-epistasia). En condiciones asíncronas, la pequeña fracción de proteoformas con S10ph puede corresponder tanto a células que han iniciado la entrada en mitosis como a subpoblaciones en interfase en las que H3S10ph actúa como marca de activación transcripcional [@prigent2003; @zippo2009; @sawicka2012].
+
+En suma, los datos indican la existencia de una desacetilación selectiva condicionada por el estado de fosforilación. La fracción acetilada que carece de S10ph se mantiene globalmente estable, mientras que en el subespacio con S10ph disminuyen drásticamente las proteoformas con mayor grado de acetilación, sin que se llegue a eliminar por completo dicha modificación cuando esta se acopla a señales mitóticas fundamentales como S10phK14ac. Este patrón concuerda con la hipótesis de que la mitosis no ejerce una supresión uniforme de las marcas químicas, sino que reconfigura el perfil de proteoformas para preservar combinaciones específicas asociadas a una influencia mutua (*crosstalk*) funcional. Un ejemplo de ello son las combinaciones fosfo‑acetiladas que integran las señales de quinasas mitóticas y acetiltransferasas [@lo2000; @cheung2000; @suganuma2008; @leutert2021].
+
+### Alteración de las interacciones epistáticas y reorganización del módulo H3K9–S10–K14
+
+El modelo Dirichlet epistático también permite analizar cómo cambia la estructura de interacciones entre K9, S10 y K14 al pasar de la asincronía a la mitosis. En este análisis de mide el parámetro $\epsilon$ que no representa un promedio de porcentajes ni una diferencia de medias común. Este coeficiente calcula el grado de interacción bioquímica entre las marcas directamente en el campo energético latente del modelo ,$\phi_i\propto - log(p_i)$ [@chen2021], en analogía con las formulaciones estándar de epistasia como desviación de la aditividad en escala logarítmica [@mackay2014; @álvarez-castro2019]. Un valor negativo indica que la coexistencia de dos modificaciones exige mayor energía, lo que reduce la probabilidad de que aparezcan juntas (antagonismo) [@mackay2014]. Conviene señalar que este enfoque examina estrictamente el mecanismo de incorporación conjunta de las marcas en la molécula y no sus efectos funcionales en la expresión de los genes [@mazzio2012; @blakey2015].
+
+```{r}
+#| label: fig-epistasia-ac
+#| fig-cap: "Efectos espistáticos separados por estado de S10"
+#| fig-width: 8
+#| fig-height: 5
+#| out-width: "100%"
+
+#datos_dir <- file.path("DatosProcesados")
+resultados_epistasia_dia <- readRDS(file.path(datos_dir, 
+                  # "epistasia_descomp_dia",
+                   "77_resultados_epistasia_descomposicion_varianza_dia.rds"))
+
+library(dplyr)
+library(stringr)
+
+df_filtrado <- resultados_epistasia_dia$df_resumen_epistasia_local %>%
+  filter(str_detect(Cuadrado, "K9ac:K14ac"))
+
+df_filtrado <- df_filtrado %>%
+  mutate(K9 = str_extract(Etiqueta, "K9[^→ ]+"))
+
+
+library(ggplot2)
+
+df_plot <- df_filtrado %>%
+  mutate(
+    S10 = case_when(
+      str_detect(Etiqueta, "S10un") ~ "S10un",
+      str_detect(Etiqueta, "S10ph") ~ "S10ph",
+      TRUE ~ NA_character_
+    )
+  )
+
+
+
+ggplot(df_plot, aes(x = K9, y = Media, color = Condicion, group = Condicion)) +
+  geom_point(size = 3) +
+  geom_line() +
+  geom_errorbar(aes(ymin = IC_Lower, ymax = IC_Upper), width = 0.1) +
+  facet_wrap(~ S10) +
+  theme_bw() +
+  theme(axis_text_x = element_text(angle = 45, hjust = 1, vjust = 1),
+        plot.margin = margin(t = 10, r = 10, b = 10, l = 10, unit = "pt")) +
+  labs(
+    x = "Estado inicial de K9",
+    y = "Media (con IC)",
+    color = "Condición",
+    title = "Efectos epistáticos K9ac:K14ac separados por estado de S10"
+  ) 
+```
+
+En la condición asíncrona (mayoritariamente interfase), los datos demuestran que el antagonismo entre la aparición simultánea de K9ac y K14ac es general cuando la serina 10 carece de fosforilación (@fig-epistasia-local-k9-k14, filas `S10un` y @fig-epistasia-ac). Ocurre lo mismo sea cual sea el estado inicial de la lisina 9: tanto si se halla sin modificar (`K9un`, $\epsilon = -1.45$), como monometilada (`K9me1`, $\epsilon = -1.42$), dimetilada (`K9me2`, $\epsilon = -2.07$) o trimetilada (`K9me3`, $\epsilon = -2.96$), la doble acetilación se encuentra penalizada. Además, se observa una progresión clara: cuanto mayor es la metilación de partida en K9, más acusada es la exclusión mutua con K14ac, hasta llegar al extremo en el estado reprimido (`K9me3`) [@park2011; @cheung2000]. La fosforilación de S10 rediduce esta barrera (@fig-epistasia-local-k9-k14, filas `S10ph` y @fig-epistasia-ac); aunque el antagonismo no desaparece por completo, los valores de $\epsilon$ se aproximan hacia la aditividad en todas las transiciones (por ejemplo, pasando de $-2.96$ a $-1.83$ en el fondo `me3`). Esto indica que la carga negativa de S10ph facilita físicamente el acceso de las acetiltransferasas. Pese a este tendencia local, la combinación triple sigue estando muy desfavorecida en el conjunto de la molécula, lo que explica por qué apenas se detecta en el estado asíncrono basal (@tbl-delta-log2, `K9acS10phK14ac`, $P(\text{Epi} > 0) = 0.002$) [@völker-albert2018].
+
+Al empezar la mitosis, este sistema de control condicional desaparece y el modelo se vuelve aditivo. En presencia de fosforilación (@fig-epistasia-local-k9-k14, filas `S10ph` en Mitosis), todas las transiciones hacia la doble acetilación se neutralizan ($\epsilon \approx 0$), lo que refleja una independencia estadística completa. Sin fosforilación (@fig-epistasia-local-k9-k14, filas `S10un` en Mitosis), el antagonismo tiende a desaparecer en los estados basales `K9un` ($\epsilon = -0.14$) y `K9me1` ($\epsilon = -0.16$),y solo se conserva una interaccón más moderada en los fondos más metilados `K9me2` y `K9me3`. Al suprimirse estas barreras energéticas, la probabilidad de hallar la combinación triple en mitosis aumenta de forma drástica (@tbl-delta-log2, donde sube a $0.217$).
+
+Desde el punto de vista biológico, estos resultados demuestran que durante la condensación de la cromatina se anula la comunicación condicional entre residuos vecinos, dando paso a una incorporación de marcas independiente y puramente aleatoria en la cola de la histona H3 [@wei1998; @alberts2022]. La fosforilación mitótica de H3S10 y su coordinación con cambios en K9 y otras modificaciones apoyan esta interpretación de un reequilibrio global de marcas postraduccionales durante la mitosis [@park2011; @park2022].
+
+## Alcance y limitaciones del análisis
+
+Por último, conviene señalar los límites de estos resultados. El número de réplicas y de días experimentales es reducido; sin embargo, la inclusión del efecto de día como factor de bloque resulta fundamental, en línea con las recomendaciones generales sobre diseño y modelización lineal moderada en estudios de expresión con pocas muestras [@smyth2004; @smyth2005; @sartor2006; @law2014; @ritchie2015]. Respaldada por la comparación de modelos mediante criterios predictivos y técnicas de validación cruzada, esta variable permite aislar la variabilidad interdiaria (el ruido técnico asociado a cada jornada de cultivo) de la varianza residual, reduciendo la dispersión no explicada y mejorando la precisión en la estimación del predictor principal [@vehtari2017; @vehtari2024; @yao2018]. No obstante, las conclusiones de este análisis se restringen a un único fragmento de la histona H3, y el modelo Dirichlet epistático proporciona una descripción estadística de las abundancias de las proteoformas, no un mecanismo molecular en sentido estricto. En este marco, la epistasia inferida es una relación estadística entre proporciones, análoga a la epistasia genética cuantitativa, y no una evidencia directa de interacciones bioquímicas entre enzimas o complejos de la cromatina [@baryshnikova2010; @álvarez-castro2019].
+
+Teniendo en cuenta estas limitaciones, la concordancia entre el análisis descriptivo, los modelos lineales moderados, la regresión de Dirichlet clásica y las formulaciones epistáticas respalda una conclusión sólida [@smyth2004; @harrison2020; @park2011; @alabert2015; @carlberg2023]. La transición desde el estado asíncrono hacia la mitosis en el fragmento H3 (9–17) implica una reorganización profunda de las proporciones de las proteoformas, liderada por la fosforilación en S10 y condicionada por el estado de modificación en K9 y K14. Este comportamiento es coherente con el papel de H3S10ph y H3K9me como marcas centrales en la condensación cromosómica y en la memoria epigenética [@wei1998; @nowak2004; @park2011; @alabert2015; @carlberg2023]. De este modo, el fragmento actúa como un módulo integrado cuya arquitectura varía de forma coordinada en función de la condición celular, refutando la hipótesis de una mera suma de efectos independientes para cada marca aislada [@bannister2011; @kouzarides2007; @millán-zambrano2022].
+
+En el futuro, sería interesante aplicar esta metodología al análisis conjunto de proteoformas de varios fragmentos de la histona. Como las modificaciones de la cola N-terminal no actúan de forma aislada, extender el modelo multivariante a otras regiones del péptido permitiría evaluar si la comunicación y las restricciones observadas en el tramo 9–17 se coordinan con marcas más distantes. Esto ofrecería una visión global de la estructura de la cromatina.

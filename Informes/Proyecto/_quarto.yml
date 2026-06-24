@@ -1,0 +1,72 @@
+project:
+  type: book
+  execute-dir: project
+
+book:
+  title: "Modelos bayesianos de respuesta composicional para el análisis de proteoformas del fragmento 9-17 de la histona H3 
+    en la transición a mitosis"
+  
+  subtitle: "Trabajo fin de Máster"
+  
+  author:
+    - name: "Pedro Martí Requena"
+  
+  date: 2026-06-30
+  date-format: "[Valencia,] D [de] MMMM [de] YYYY"
+  
+  chapters:
+    - index.qmd
+    - 10_introduccion_biologica.v4.qmd
+    - 11_objetivos.qmd
+    - 20_Metodos_summary.qmd
+    - 31_resultados_descri_v1.qmd
+    - 32_resultados_bioinfo_v1.qmd
+    - 33_resultados_bayesianos_v1.qmd
+    - 37_resultados_kappa_comun_dia_v1.qmd
+    - 38_resultados_epistasia_descomposicion_varianza_corto_dia_v1.qmd
+    - 40_discusion_v3.qmd
+    - 50_conclusiones.qmd
+    - referencias.qmd
+
+lang: es-ES
+
+bibliography: ../references.bib
+csl: ../plos-computational-biology.csl
+
+# Opciones globales
+execute: 
+  echo: false
+  warning: false
+  message: false
+
+format:
+  pdf:
+    documentclass: scrbook
+    classoption: 
+      - openright
+    titlepage: true
+    toc: true
+    toc-depth: 2
+    toc-title: "Índice de contenidos"
+    number-sections: true
+    geometry:
+      - margin=2.5cm
+    mainfont: "Latin Modern Roman"
+    monofont: "Latin Modern Mono"
+    template-partials:
+      - before-body.tex
+    include-in-header: 
+      text: |
+        \usepackage{needspace}
+        \usepackage{float}
+
+language:
+  crossref-fig-title: "Figura"
+  crossref-tbl-title: "Tabla"
+  crossref-eq-prefix: "Ecuación"
+  crossref-fig-prefix: "figura"
+  crossref-tbl-prefix: "tabla"
+  toc-title: "Índice de contenidos"
+  # references-title: "Referencias"
+  appendix-title: "Apéndices"
+  section-title-append: false

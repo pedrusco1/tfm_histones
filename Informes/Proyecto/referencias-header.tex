@@ -1,0 +1,25 @@
+\usepackage{etoolbox}
+
+% Quita el número solo al capítulo cuyo título es "Referencias"
+\preto\chapter{%
+  \begingroup
+    \edef\temp@title{\detokenize{\chaptername}}%
+  \endgroup
+}
+
+\makeatletter
+\pretocmd{\chapter}{%
+  \begingroup
+  \@ifnextchar*{\starredchapter}{\numberedchapter}%
+}{}
+{\typeout{Error patching chapter}}
+\newcommand{\starredchapter}[1]{\chapter*{#1}}
+\newcommand{\numberedchapter}[1]{%
+  \ifstrequal{#1}{Referencias}{%
+    \chapter*{#1}%
+    \addcontentsline{toc}{chapter}{#1}%
+  }{%
+    \chapter{#1}%
+  }%
+}
+\makeatother
