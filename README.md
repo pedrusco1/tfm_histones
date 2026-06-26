@@ -16,7 +16,6 @@ Este proyecto estudia la reorganización composicional de 20 proteoformas del fr
 RProyecto_composicional/
 ├── DatosProcesados/
 ├── Funciones/
-├── Imagenes/
 ├── Informes/
 │   └── Proyecto/
 │       └── .quarto/
@@ -27,6 +26,6 @@ RProyecto_composicional/
 ```
 
 - Para facilitar la ejecución de los código se ha incluido un script de R que se llama 00_run_todo_secuencial.R. Este escript llama a los restantes y se generan las carpetas y archivos inermedios que se utlilizarán para compilar el informe.
-- Para ejercitarlo, desde la carpeta raiz del proyecto, hacer en Rstudio
+- Para ejercutarlo, desde la carpeta raiz del proyecto, hacer en Rstudio
 
 source("ScriptsR/00_run_todo_secuencial.R")
