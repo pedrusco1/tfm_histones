@@ -409,7 +409,7 @@ A continuación se detalla la parametrización exacta que adopta cada
 herramienta dentro del marco general unificado:
 
 | Componente / Parámetro | `limma` | `edgeR` (QL Framework) | `voom-limma` |
-|:-----------------|:-----------------|:-----------------|:-----------------|
+|:---|:---|:---|:---|
 | **Variable observada (**$y_{gi}$) | Intensidad continua ($\log_2$) | Conteo digital crudo ($Y_{gi}$) | $\log_2(\text{CPM})$ transformada |
 | **Distribución (*Likelihood*)** | Gaussiana: $\mathcal{N}(\mu_{gi}, \sigma_g^2)$ | Binomial Negativa: $\mathcal{NB}(\mu_{gi}, \phi_g)$ | Gaussiana: $\mathcal{N}(\mu_{gi}, w_{gi}\sigma_g^2)$ |
 | **Función de enlace** $g(\mu_{gi})$ | Identidad | Logarítmica (con *offset* $\log N_i$) | Identidad |
@@ -828,4 +828,4 @@ guardaron en ficheros `.Rdata`, `.Rds` o `.csv`, permitiendo reconstruir
 y extender el análisis completo.
 
 Todos los códigos y objetos intermedios se encuentran disponibles en el
-enlace \textcolor{blue}{url:: de github}.
+enlace <https://github.com/pedrusco1/tfm_histones>
