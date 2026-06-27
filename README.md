@@ -73,6 +73,8 @@ Para reproducir este proyecto, seguir las siguientes instrucciones:
 
     ```{r}
     install.packages("renv")  # solo si no está disponible renv::restore()
+    install.packages("BiocManager") # necesario para paquetes de Bioconductor 
+    renv::restore()
     ```
 
     Esto reinstala las versiones de paquetes registradas en `renv.lock` para que el entorno sea el mismo que el usado en el análisis.
