@@ -10,15 +10,15 @@ El objetivo general es caracterizar cómo cambian las proporciones relativas de 
 
 Desde el punto de vista metodológico, se realiza:
 
--  análisis exploratorio composicional;
+- análisis exploratorio composicional;
 
 - Comparación dre varias familias de modelos:
 
-  -  modelos lineales moderados sobre transformaciones CLR/ILR;
+  - modelos lineales moderados sobre transformaciones CLR/ILR;
 
   - regresión de Dirichlet;
 
-  -  modelos bayesianos de Dirichlet con campo epistático;
+  - modelos bayesianos de Dirichlet con campo epistático;
 
   - modelos logístico‑normales con estructura epistática y regularización.
 
@@ -37,21 +37,21 @@ RProyecto_composicional/
 └── Stan/
 ```
 
--  \`DatosProcesados/\`: Datos proceasdos preparados para el análisis
+- \`DatosProcesados/\`: Datos proceasdos preparados para el análisis
 
--  \`Funciones/\`: funciones auxiliares usadas por los scripts principales.
+- \`Funciones/\`: funciones auxiliares usadas por los scripts principales.
 
--  \`Informes/Proyecto/\`: documentos del manuscrito y materiales derivados.
+- \`Informes/Proyecto/\`: documentos del manuscrito y materiales derivados.
 
--  \`ScriptsR/\`: scripts de carga de datos, ajuste de modelos, comparación y generación de resultados.
+- \`ScriptsR/\`: scripts de carga de datos, ajuste de modelos, comparación y generación de resultados.
 
--  \`Stan/\`: modelos probabilísticos implementados en Stan.
+- \`Stan/\`: modelos probabilísticos implementados en Stan.
 
 ## Reproducibilidad
 
-- Para facilitar la ejecución de los código se ha incluido un script de R que se llama `00_run_todo_secuencial.R`. Este escript llama a los restantes y se generan las carpetas y archivos inermedios que se utlilizarán para compilar el informe.
+- Para facilitar la ejecución de los código se ha incluido un script de R que se llama `00_run_todo_secuencial.R`. Este script llama a los restantes y se generan las carpetas y archivos intermedios que se utilizarán para compilar el informe.
 
-- Para ejercutarlo, desde la carpeta raíz del proyecto, hacer en Rstudio:
+- Para ejercitarlo, desde la carpeta raíz del proyecto, en la consola de Rstudio hacer:
 
 ```{r}
 source("ScriptsR/00_run_todo_secuencial.R")
@@ -59,19 +59,35 @@ source("ScriptsR/00_run_todo_secuencial.R")
 
 - Los scripts están organizados en bloques que cubren:
 
-  1.   análisis exploratorio y expresión diferencial;
+  1.  análisis exploratorio y expresión diferencial;
 
-  2.   modelos Dirichlet;
+  2.  modelos Dirichlet;
 
-  3.   modelos epistáticos;
+  3.  modelos epistáticos;
 
-  4.   modelos logístico‑normales;
+  4.  modelos logístico‑normales;
 
   5.  comparación entre modelos y resúmenes finales.
 
+- Para generar el texto de la memoria desde la terminal de RStudio:
+
+  1.  Situarse en el directorio del proyecto:
+
+```{bash}
+cd ~/Informes/Proyecto
+```
+
+2.  Ejecutar el renderizado:
+
+```{bash}
+quarto render 
+```
+
+- Este comando compila el proyecto Quarto del TFM y genera un PDF final dentro de la carpeta \_book/ del directorio Informes/Proyecto.
+
 ## Documento de referencia
 
-La descripción completa del contexto biológico, los métodos estadísticos, los resultados y la discusión se encuentra en el manuscrito del TFM, incluido en la ruta, \~/Informes/Proyecto/\_book “Modelos bayesianos de respuesta composicional para el análisis de proteoformas del fragmento 9–17 de la histona H3 en la transición a mitosis”.
+La descripción completa del contexto biológico, los métodos estadísticos, los resultados y la discusión se encuentra en el manuscrito del TFM, generado en la ruta, \~/Informes/Proyecto/\_book “Modelos bayesianos de respuesta composicional para el análisis de proteoformas del fragmento 9–17 de la histona H3 en la transición a mitosis”.
 
 # Resumen breve de los resultados
 
