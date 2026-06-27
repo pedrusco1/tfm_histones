@@ -49,13 +49,41 @@ RProyecto_composicional/
 
 ## Reproducibilidad
 
-- Para facilitar la ejecución de los código se ha incluido un script de R que se llama `00_run_todo_secuencial.R`. Este script llama a los restantes y se generan las carpetas y archivos intermedios que se utilizarán para compilar el informe.
+Para reproducir este proyecto, seguir las siguientes instrucciones:
 
-- Para ejercitarlo, desde la carpeta raíz del proyecto, en la consola de Rstudio hacer:
+1.  **Clonar el repositorio**, en una terminal:
 
-```{r}
-source("ScriptsR/00_run_todo_secuencial.R")
-```
+    ```{bash}
+    git clone https://github.com/usuario/tfm_histones.git cd tfm_histones
+    ```
+
+2.  **Abrir el proyecto de RStudio**
+
+    - Abrir RStudio.
+
+    - Ir a `File` → `Open Project...`.
+
+    - Navegar hasta la carpeta `tfm_histones/` recién clonada.
+
+    - Seleccionar el archivo `RProyecto_composicional.Rproj`.
+
+    > Nota: El nombre del proyecto de RStudio (`RProyecto_composicional.Rproj`) no coincide con el nombre de la carpeta (`tfm_histones`), pero esto no afecta al funcionamiento. Lo importante es abrir ese archivo `.Rproj` dentro de la carpeta clonada.
+
+3.  **Restaurar el entorno de paquetes con `renv`** En la consola de R:
+
+    ```{r}
+    install.packages("renv")  # solo si no está disponible renv::restore()
+    ```
+
+    Esto reinstala las versiones de paquetes registradas en `renv.lock` para que el entorno sea el mismo que el usado en el análisis.
+
+4.  **Ejecutar el pipeline de análisis** En la consola de R, ya dentro del proyecto:
+
+    ```{r}
+    source("ScriptsR/00_run_todo_secuencial.R")
+    ```
+
+    Este script ejecuta de forma secuencial todos los scripts de `ScriptsR/` y genera los resultados necesarios en las carpetas de datos procesados.
 
 - Los scripts están organizados en bloques que cubren:
 
@@ -69,25 +97,18 @@ source("ScriptsR/00_run_todo_secuencial.R")
 
   5.  comparación entre modelos y resúmenes finales.
 
-- Para generar el texto de la memoria desde la terminal de RStudio:
+6.  **Generar el PDF de la memoria.** Desde la terminal de RStudio:
 
-  1.  Situarse en el directorio del proyecto:
+    ```{bash}
+    cd Informes/Proyecto
+    quarto render
+    ```
 
-```{bash}
-cd ~/Informes/Proyecto
-```
-
-2.  Ejecutar el renderizado:
-
-```{bash}
-quarto render 
-```
-
-- Este comando compila el proyecto Quarto del TFM y genera un PDF final dentro de la carpeta \_book/ del directorio Informes/Proyecto.
+    Esto compila el proyecto Quarto y genera el PDF final en `Informes/Proyecto/_book/`.
 
 ## Documento de referencia
 
-La descripción completa del contexto biológico, los métodos estadísticos, los resultados y la discusión se encuentra en el manuscrito del TFM, generado en la ruta, \~/Informes/Proyecto/\_book “Modelos bayesianos de respuesta composicional para el análisis de proteoformas del fragmento 9–17 de la histona H3 en la transición a mitosis”.
+La descripción completa del contexto biológico, los métodos estadísticos, los resultados y la discusión se encuentra en el manuscrito del TFM, generado en la ruta, \~/Informes/Proyecto/\_book y que se llama “Modelos bayesianos de respuesta composicional para el análisis de proteoformas del fragmento 9–17 de la histona H3 en la transición a mitosis”.
 
 # Resumen breve de los resultados
 
