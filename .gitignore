@@ -1,4 +1,5 @@
 *.Rdata
+!DatosProcesados/df_h3917.Rdata
 *.rds
 *.html
 Informes/Proyecto/_book/
