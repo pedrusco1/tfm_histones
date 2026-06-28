@@ -18,7 +18,7 @@ book:
     - index.qmd
     - 10_introduccion_biologica.v4.qmd
     - 11_objetivos.qmd
-    - 20_Metodos_summary.qmd
+    - 20_Metodos_summary_v1.qmd
     - 31_resultados_descri_v1.qmd
     - 32_resultados_bioinfo_v1.qmd
     - 33_resultados_bayesianos_v1.qmd
@@ -64,8 +64,8 @@ language:
   crossref-fig-title: "Figura"
   crossref-tbl-title: "Tabla"
   crossref-eq-prefix: "Ecuación"
-  crossref-fig-prefix: "figura"
-  crossref-tbl-prefix: "tabla"
+  crossref-fig-prefix: "Figura"
+  crossref-tbl-prefix: "Tabla"
   toc-title: "Índice de contenidos"
   # references-title: "Referencias"
   appendix-title: "Apéndices"

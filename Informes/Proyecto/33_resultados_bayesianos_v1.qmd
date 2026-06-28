@@ -377,6 +377,8 @@ En consecuencia, los resultados de las validaciones predictivas a posteriori (PP
 #| label: fig-ppc-global-12-modelos
 #| fig-cap: "Verificaciones predictivas posteriores globales para centroide de Aitchison y variación total CLR en los doce modelos. Las líneas horizontales de puntos señalan el intervalo de compatibilidad [0.1, 0.9] de los p-valores PPC."
 #| echo: false
+#| fig-width: 6
+#| fig-height: 8
 #| out-width: "100%"
 
 library(ggplot2)
