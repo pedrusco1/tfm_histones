@@ -484,26 +484,26 @@ composiciones, modelando simultáneamente todo el vector de proporciones
 sin necesidad de transformaciones previas [@hijazi2009; @maier2014;
 @sennhenn-reulen2018].
 
-Sea $Y_n = (Y_{n1}, \dots, Y_{nK})$ la composición observada en la
+Sea $Y_i = (Y_{i1}, \dots, Y_{iK})$ la composición observada en la
 muestra $n$ y $x_n$ la fila correspondiente de la matriz de diseño $X$;
 se asume
 
-$$Y_n \mid \boldsymbol{\alpha}_n \sim \mathrm{Dirichlet}(\boldsymbol{\alpha}_n),
+$$Y_n \mid \boldsymbol{\alpha}_i \sim \mathrm{Dirichlet}(\boldsymbol{\alpha}_i),
 \qquad
-\boldsymbol{\alpha}_n = \phi_n \boldsymbol{\mu}_n,
+\boldsymbol{\alpha}_n = \phi_n \boldsymbol{\mu}_i,
 \qquad
-\boldsymbol{\mu}_n = \mathrm{softmax}(\boldsymbol{\eta}_n).$$
+\boldsymbol{\mu}_i = \mathrm{softmax}(\boldsymbol{\eta}_i).$$
 
 El predictor lineal por componente se define como
-$$\eta_{n1} = 0, \qquad
-\eta_{nk} = x_n^\top \boldsymbol{\beta}_k
+$$\eta_{i1} = 0, \qquad
+\eta_{ik} = x_i^\top \boldsymbol{\beta}_k
             + \text{(efecto aleatorio de día si aplica)}, \quad k = 2,\dots,K,$$
 de modo que la primera proteoforma actúa como categoría de referencia
 ($\boldsymbol{\beta}_1 = 0$) y los coeficientes $\boldsymbol{\beta}_k$
 se interpretan como efectos de la condición experimental (y otras
 covariables) sobre los log-odds de cada proteoforma frente a la de
-referencia, mientras que la precisión $\phi_n$ controla la dispersión
-global alrededor de la media composicional $\boldsymbol{\mu}_n$.
+referencia, mientras que la precisión $\phi_i$ controla la dispersión
+global alrededor de la media composicional $\boldsymbol{\mu}_i$.
 
 Sobre esta estructura se consideran cuatro variantes para $\phi_n$:
 precisión común para todas las muestras, precisión por condición
@@ -536,11 +536,11 @@ Dirichlet, adecuada cuando cada réplica experimental es un vector de
 proporciones. Si $Y_n$ es la composición observada en la réplica $n$,
 entonces se asume
 
-$$ Y_n \sim \text{Dirichlet}(\alpha_n)$$,
+$$ Y_i \sim \text{Dirichlet}(\alpha_i)$$,
 
-con $\alpha_n = \kappa_c \cdot \pi_c + \varepsilon$, donde $c$ indica la
+con $\alpha_i = \kappa_c \cdot \pi_c + e$, donde $c$ indica la
 condición experimental de la muestra, $\kappa_c$ es un parámetro de
-concentración y $\varepsilon$ es una constante pequeña para evitar
+concentración y $e$ es una constante pequeña para evitar
 problemas numéricos cuando alguna probabilidad es muy baja. El parámetro
 $\kappa_c$ controla la dispersión entre réplicas: cuanto mayor es, más
 cerca quedan las observaciones de la media teórica; cuanto menor es, más
@@ -583,10 +583,7 @@ de esos coeficientes:
 
 $$\epsilon^{\top}\epsilon = \phi^{\top} B^{\top} B \phi = \phi^{\top} \Delta \phi$$,
 
-siendo $\Delta = B^{\top} B$ representa el Laplaciano de la epistasia.
-Esta matriz actúa como un operador de curvatura discreta: no penaliza
-los campos puramente aditivos, pero sí las desviaciones locales respecto
-a la aditividad.
+siendo $\Delta = B^{\top} B$.Esta matriz actúa como un operador de curvatura discreta: no penaliza los campos puramente aditivos, pero sí las desviaciones locales respecto a la aditividad.
 
 Con esta construcción, la previa sobre el campo se define como una
 Gaussiana centrada en el sentido de mínima epistasia, es decir,
@@ -646,7 +643,7 @@ definir la matriz de precisión del modelo log‑normal [@oguamalam2022]:
 
 $$\mathbf{z}_i =
 \mathrm{ilr}(\mathbf{y}\_i), \quad \mathbf{z}\_i \mid \beta, \Omega \sim N(X_i
-\beta, \Omega^{-1}),\quad \Omega = \tau \text{L}_{shape} + \delta I$$
+\beta, \Omega^{-1}),\quad \Omega = \tau \Delta_{shape} + \delta I$$
 
 Así, $\tau$ controla cuánto penalizamos campos “rugosos” (con epistasia
 fuerte) y $\delta$ recoge variación residual no explicada por la
@@ -659,11 +656,11 @@ precisión $Q$: precisión residual específica por coordenada ILR o bien
 común a todas las coordenadas, y en ambos casos con o sin efecto
 aleatorio de día en la media, lo que permite capturar explícitamente la
 variabilidad entre días de experimento sin renunciar a la regularización
-epistática impuesta por $\tau \text{L}_{shape}$ [@wang].
+epistática impuesta por $\tau \Delta_{shape}$ [@wang].
 
 ## Medidas resumen de epistasia
 
-A partir del campo de potenciales $f$ y del operador epistático $L$,
+A partir del campo de potenciales $f$ y del operador epistático $\Delta$,
 cuantificamos la epistasia a dos niveles: global, mediante
 descomposiciones espectrales del campo, y local, mediante contrastes
 definidos sobre caras del grafo de Hamming de proteoformas.
@@ -672,12 +669,7 @@ A nivel global consideramos una descomposición ortogonal del campo de
 pontenciales $f$ para separar los efectos de las interacciones de
 distinto orden (como el efecto aditivo y la epistasia). Este enfoque es
 equivalente a los desgloses tradicionales de la varianza genética en
-modelos de múltiples loci, donde se evalúa el peso de cada gen por
-separado y cómo se alteran sus frecuencias cuando los genes se heredan
-juntos de forma no aleatoria (desequilibrio de ligamiento). Finalmente,
-se cuantifica el impacto de cada nivel calculando las energías $E^{(k)}$
-para cada orden $k$ [@phillips2008; @álvarez-castro2019]. A partir de
-ellas definimos índices como:
+modelos de múltiples loci. Finalmente, se cuantifica el impacto de cada nivel calculando las energías $E^{(k)}$ para cada orden $k$ [@phillips2008; @álvarez-castro2019]. A partir de ellas definimos índices como:
 
 $$I_{\text{epi}} = \frac{\sum_{k \ge 2} E^{(k)}}{\sum_{k \ge 1} E^{(k)}},$$
 
