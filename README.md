@@ -12,7 +12,7 @@ Desde el punto de vista metodológico, se realiza:
 
 - análisis exploratorio composicional;
 
-- Comparación dre varias familias de modelos:
+- Comparación de varias familias de modelos:
 
   - modelos lineales moderados sobre transformaciones CLR/ILR;
 
