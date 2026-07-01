@@ -54,7 +54,7 @@ Para reproducir este proyecto, seguir las siguientes instrucciones:
 1.  **Clonar el repositorio**, en una terminal:
 
     ```{bash}
-    git clone https://github.com/usuario/tfm_histones.git cd tfm_histones
+    git clone https://github.com/pedrusco1/tfm_histones.git cd tfm_histones
     ```
 
 2.  **Abrir el proyecto de RStudio**
